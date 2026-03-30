@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WhatsApp API Pricing in Saudi Arabia 2026 — Real Cost Breakdown</title>
+  <meta name="description" content="The actual cost of WhatsApp Business API in Saudi Arabia: Meta fees, platform pricing, markup traps, and real examples across sectors." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Fraunces:ital,wght@0,300;0,600;1,300&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0d0f11;
+      --surface: #141618;
+      --border: #1e2124;
+      --accent: #00d97e;
+      --accent2: #ff6b35;
+      --text: #e8eaed;
+      --muted: #7a7f87;
+      --mono: 'DM Mono', monospace;
+      --serif: 'Fraunces', Georgia, serif;
+      --sans: 'DM Sans', sans-serif;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      font-size: 16px;
+      line-height: 1.7;
+      min-height: 100vh;
+    }
+
+    /* ─── HEADER ─── */
+    header {
+      border-bottom: 1px solid var(--border);
+      padding: 1.25rem 2rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .repo-tag {
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      color: var(--muted);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      padding: 0.25rem 0.75rem;
+      border-radius: 4px;
+      letter-spacing: 0.04em;
+    }
+    .repo-tag span { color: var(--accent); }
+
+    /* ─── HERO ─── */
+    .hero {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 5rem 2rem 3rem;
+    }
+    .hero-kicker {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 1.25rem;
+    }
+    .hero h1 {
+      font-family: var(--serif);
+      font-size: clamp(2rem, 5vw, 3.2rem);
+      font-weight: 300;
+      line-height: 1.15;
+      margin-bottom: 1.5rem;
+      letter-spacing: -0.01em;
+    }
+    .hero h1 em {
+      font-style: italic;
+      color: var(--accent);
+    }
+    .hero-sub {
+      color: var(--muted);
+      font-size: 1.05rem;
+      max-width: 600px;
+      line-height: 1.6;
+      margin-bottom: 2rem;
+    }
+    .hero-meta {
+      display: flex;
+      gap: 2rem;
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      color: var(--muted);
+      border-top: 1px solid var(--border);
+      padding-top: 1.25rem;
+    }
+    .hero-meta strong { color: var(--text); }
+
+    /* ─── MAIN CONTENT ─── */
+    main {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 2rem 6rem;
+    }
+
+    /* ─── CALLOUT ─── */
+    .callout {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--accent);
+      padding: 1.25rem 1.5rem;
+      margin: 2.5rem 0;
+      border-radius: 0 6px 6px 0;
+    }
+    .callout-label {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--accent);
+      margin-bottom: 0.5rem;
+    }
+    .callout p { font-size: 0.95rem; color: var(--muted); }
+    .callout strong { color: var(--text); }
+
+    /* ─── SECTION ─── */
+    section { margin: 3.5rem 0; }
+    h2 {
+      font-family: var(--serif);
+      font-size: 1.6rem;
+      font-weight: 600;
+      margin-bottom: 1.25rem;
+      letter-spacing: -0.01em;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    h2::before {
+      content: '';
+      display: inline-block;
+      width: 3px;
+      height: 1.4em;
+      background: var(--accent);
+      border-radius: 2px;
+      flex-shrink: 0;
+    }
+    h3 {
+      font-family: var(--sans);
+      font-size: 1rem;
+      font-weight: 500;
+      margin: 1.75rem 0 0.6rem;
+      color: var(--text);
+    }
+    p { margin-bottom: 1rem; color: #b8bdc5; }
+
+    /* ─── DATA TABLE ─── */
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1.5rem 0;
+      font-size: 0.88rem;
+    }
+    .data-table th {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      text-align: left;
+      padding: 0.6rem 1rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .data-table td {
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+    }
+    .data-table tr:last-child td { border-bottom: none; }
+    .data-table tr:hover td { background: var(--surface); }
+    .tag-green {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      background: rgba(0,217,126,0.1);
+      color: var(--accent);
+      padding: 0.15rem 0.5rem;
+      border-radius: 3px;
+    }
+    .tag-orange {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      background: rgba(255,107,53,0.12);
+      color: var(--accent2);
+      padding: 0.15rem 0.5rem;
+      border-radius: 3px;
+    }
+
+    /* ─── CODE BLOCK ─── */
+    .code-block {
+      background: #080a0c;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 1.25rem 1.5rem;
+      margin: 1.5rem 0;
+      font-family: var(--mono);
+      font-size: 0.83rem;
+      line-height: 1.8;
+      overflow-x: auto;
+    }
+    .code-label {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--muted);
+      margin-bottom: 0.75rem;
+    }
+    .c-key { color: var(--muted); }
+    .c-val { color: #79c0ff; }
+    .c-num { color: var(--accent); }
+    .c-str { color: #a5d6ff; }
+    .c-comment { color: #484f58; font-style: italic; }
+
+    /* ─── SCENARIO BOX ─── */
+    .scenario {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin: 1.5rem 0;
+    }
+    .scenario-title {
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--muted);
+      margin-bottom: 1rem;
+    }
+    .scenario-title span { color: var(--accent2); }
+    .scenario-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.45rem 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.88rem;
+    }
+    .scenario-row:last-child { border-bottom: none; }
+    .scenario-row .label { color: var(--muted); }
+    .scenario-row .value { font-family: var(--mono); color: var(--text); }
+    .scenario-row.total .label { color: var(--text); font-weight: 500; }
+    .scenario-row.total .value { color: var(--accent); font-weight: 500; }
+
+    /* ─── WARNING ─── */
+    .warning {
+      background: rgba(255,107,53,0.06);
+      border: 1px solid rgba(255,107,53,0.2);
+      border-radius: 6px;
+      padding: 1rem 1.25rem;
+      margin: 1.5rem 0;
+      font-size: 0.9rem;
+    }
+    .warning-icon { color: var(--accent2); margin-right: 0.4rem; }
+
+    /* ─── LINKS ─── */
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* ─── CTA SECTION ─── */
+    .cta-section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-top: 3px solid var(--accent);
+      border-radius: 0 0 8px 8px;
+      padding: 2.5rem 2rem;
+      margin: 4rem 0 2rem;
+      text-align: center;
+    }
+    .cta-section h3 {
+      font-family: var(--serif);
+      font-size: 1.4rem;
+      font-weight: 300;
+      margin-bottom: 0.75rem;
+    }
+    .cta-section p { font-size: 0.92rem; color: var(--muted); margin-bottom: 1.5rem; }
+    .cta-links { display: flex; flex-wrap: wrap; gap: 0.75rem; justify-content: center; }
+    .cta-link-primary {
+      background: var(--accent);
+      color: #000;
+      padding: 0.6rem 1.4rem;
+      border-radius: 4px;
+      font-size: 0.875rem;
+      font-weight: 500;
+      text-decoration: none;
+    }
+    .cta-link-primary:hover { background: #00c070; text-decoration: none; }
+    .cta-link-secondary {
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 0.6rem 1.4rem;
+      border-radius: 4px;
+      font-size: 0.875rem;
+      text-decoration: none;
+    }
+    .cta-link-secondary:hover { border-color: var(--muted); text-decoration: none; }
+
+    /* ─── FOOTER ─── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 1.5rem 2rem;
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      color: var(--muted);
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    @media (max-width: 600px) {
+      header, main, .hero { padding-left: 1.25rem; padding-right: 1.25rem; }
+      .hero-meta { flex-direction: column; gap: 0.5rem; }
+      footer { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="repo-tag"><span>zidnitech</span> / whatsapp-api-research</div>
+    <div class="repo-tag" style="margin-left:auto">2026 · Saudi Market</div>
+  </header>
+
+  <div class="hero">
+    <div class="hero-kicker">Technical Analysis · WhatsApp Business Platform</div>
+    <h1>WhatsApp API Pricing in<br/><em>Saudi Arabia</em> — The Real Numbers</h1>
+    <p class="hero-sub">
+      What the platform pricing pages don't tell you: how Meta fees, provider markup,
+      and conversation windows combine into your actual monthly invoice.
+    </p>
+    <div class="hero-meta">
+      <div><strong>Last updated</strong><br/>March 2026</div>
+      <div><strong>Market</strong><br/>Saudi Arabia (SAR)</div>
+      <div><strong>Sources</strong><br/>Meta Official + Provider Docs</div>
+    </div>
+  </div>
+
+  <main>
+
+    <div class="callout">
+      <div class="callout-label">TL;DR</div>
+      <p>
+        WhatsApp API cost has <strong>two independent layers</strong>: Meta's per-message fees
+        (fixed for all providers) + the platform subscription (varies 146–750+ SAR/mo).
+        Some providers add markup on Meta fees — others don't.
+        A small business sending 1,000 messages/month typically pays
+        <strong>250–450 SAR total</strong>.
+      </p>
+    </div>
+
+    <!-- LAYER 1 -->
+    <section>
+      <h2>Layer 1 — Meta's Conversation Fees</h2>
+      <p>
+        These rates are set by Meta and are identical regardless of which Business Solution
+        Provider (BSP) you use. Saudi Arabian numbers (as of 2026):
+      </p>
+
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Message Type</th>
+            <th>USD / message</th>
+            <th>SAR / message</th>
+            <th>Use case</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Marketing</td>
+            <td>$0.0455</td>
+            <td><span class="tag-orange">~0.1706 SAR</span></td>
+            <td>Broadcasts, promotions, retargeting</td>
+          </tr>
+          <tr>
+            <td>Utility</td>
+            <td>$0.0107</td>
+            <td><span class="tag-green">~0.040 SAR</span></td>
+            <td>Order confirmations, shipping updates</td>
+          </tr>
+          <tr>
+            <td>Authentication</td>
+            <td>$0.0107</td>
+            <td><span class="tag-green">~0.040 SAR</span></td>
+            <td>OTPs, verification codes</td>
+          </tr>
+          <tr>
+            <td>Service (within 24h window)</td>
+            <td>$0.00</td>
+            <td><span class="tag-green">Free</span></td>
+            <td>Replies to user-initiated messages</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p style="font-size:0.85rem; color:var(--muted);">
+        Source: <a href="https://business.whatsapp.com/products/platform-pricing?country=Saudi%20Arabia" target="_blank" rel="noopener">Meta Business Platform Pricing</a>
+      </p>
+
+      <h3>The 24-Hour Free Window</h3>
+      <p>
+        When a user messages you first, you have 24 hours to reply at zero Meta cost.
+        Every message you send during that window (confirmations, follow-ups, upsells)
+        is free. After 24h, you need an approved Template, charged at the rates above.
+      </p>
+
+      <div class="warning">
+        <span class="warning-icon">⚠</span>
+        <strong>Markup trap:</strong> Some providers add 10–30% on top of Meta's rates.
+        Always confirm whether your BSP passes Meta fees directly or inflates them.
+        Providers like Wati and Respond.io do not add markup.
+      </div>
+    </section>
+
+    <!-- LAYER 2 -->
+    <section>
+      <h2>Layer 2 — Platform Subscription</h2>
+      <p>
+        This is what you pay your BSP for the dashboard, chatbot builder, team inbox,
+        analytics, and integrations. Ranges widely by provider:
+      </p>
+
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Provider</th>
+            <th>Entry Plan / Month</th>
+            <th>Pricing Model</th>
+            <th>Meta Markup</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Wati</td>
+            <td>$39 (~146 SAR)</td>
+            <td>Per plan (flat)</td>
+            <td><span class="tag-green">None</span></td>
+          </tr>
+          <tr>
+            <td>Respond.io</td>
+            <td>$159 Growth (~596 SAR)</td>
+            <td>Per plan + MACs</td>
+            <td><span class="tag-green">None</span></td>
+          </tr>
+          <tr>
+            <td>Bevatel</td>
+            <td>129 SAR/user/month</td>
+            <td>Per user</td>
+            <td><span class="tag-orange">Unknown</span></td>
+          </tr>
+          <tr>
+            <td>Tqniat</td>
+            <td>529 SAR (5k msgs prepaid)</td>
+            <td>Prepaid wallet</td>
+            <td><span class="tag-orange">Unknown</span></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="callout">
+        <div class="callout-label">Respond.io Warning</div>
+        <p>
+          Growth starts at $159/mo but adds <strong>$12 per 100 MACs</strong>
+          (Monthly Active Contacts) above 1,000. At 3,000 active contacts,
+          your bill becomes $399+ before any Meta fees.
+        </p>
+      </div>
+    </section>
+
+    <!-- REAL NUMBERS -->
+    <section>
+      <h2>Real-World Cost Scenarios</h2>
+      <p>Three business profiles with actual numbers:</p>
+
+      <div class="scenario">
+        <div class="scenario-title">Scenario A · <span>Medical Clinic — 800 messages/month</span></div>
+        <div class="scenario-row">
+          <span class="label">200 Marketing (campaigns)</span>
+          <span class="value">200 × 0.1706 = 34.1 SAR</span>
+        </div>
+        <div class="scenario-row">
+          <span class="label">600 Utility (appointment reminders)</span>
+          <span class="value">600 × 0.040 = 24.0 SAR</span>
+        </div>
+        <div class="scenario-row">
+          <span class="label">Wati Growth subscription</span>
+          <span class="value">146 SAR</span>
+        </div>
+        <div class="scenario-row total">
+          <span class="label">Total / month</span>
+          <span class="value">~204 SAR</span>
+        </div>
+      </div>
+
+      <div class="scenario">
+        <div class="scenario-title">Scenario B · <span>E-commerce Store — 3,000 messages/month</span></div>
+        <div class="scenario-row">
+          <span class="label">1,500 Marketing (broadcasts)</span>
+          <span class="value">1,500 × 0.1706 = 255.9 SAR</span>
+        </div>
+        <div class="scenario-row">
+          <span class="label">1,500 Utility (order updates)</span>
+          <span class="value">1,500 × 0.040 = 60.0 SAR</span>
+        </div>
+        <div class="scenario-row">
+          <span class="label">Wati Pro subscription</span>
+          <span class="value">296 SAR</span>
+        </div>
+        <div class="scenario-row total">
+          <span class="label">Total / month</span>
+          <span class="value">~612 SAR</span>
+        </div>
+      </div>
+
+      <div class="scenario">
+        <div class="scenario-title">Scenario C · <span>Service Company — 5 agents, 2,000 messages/month</span></div>
+        <div class="scenario-row">
+          <span class="label">1,200 Marketing</span>
+          <span class="value">1,200 × 0.1706 = 204.7 SAR</span>
+        </div>
+        <div class="scenario-row">
+          <span class="label">800 Utility</span>
+          <span class="value">800 × 0.040 = 32.0 SAR</span>
+        </div>
+        <div class="scenario-row">
+          <span class="label">Wati Pro subscription</span>
+          <span class="value">296 SAR</span>
+        </div>
+        <div class="scenario-row total">
+          <span class="label">Total / month</span>
+          <span class="value">~533 SAR</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- FORMULA -->
+    <section>
+      <h2>The Cost Formula</h2>
+
+      <div class="code-label">Calculate your monthly cost</div>
+      <div class="code-block">
+        <span class="c-comment">// Step 1: Meta fees</span><br/>
+        <span class="c-key">marketing_cost</span> = <span class="c-val">marketing_messages</span> × <span class="c-num">0.1706</span> <span class="c-comment">// SAR</span><br/>
+        <span class="c-key">utility_cost</span>   = <span class="c-val">utility_messages</span>   × <span class="c-num">0.040</span>  <span class="c-comment">// SAR</span><br/>
+        <span class="c-key">free_replies</span>   = <span class="c-num">0</span>  <span class="c-comment">// within 24h window</span><br/><br/>
+        <span class="c-comment">// Step 2: Platform subscription</span><br/>
+        <span class="c-key">platform_fee</span> = <span class="c-str">146–746 SAR</span> <span class="c-comment">// Wati Growth–Business</span><br/><br/>
+        <span class="c-comment">// Total</span><br/>
+        <span class="c-key">monthly_cost</span> = marketing_cost + utility_cost + platform_fee
+      </div>
+
+      <h3>Key Cost Levers</h3>
+      <p>
+        <strong>1. Message type classification:</strong> A confirmation message with a promotional
+        line gets classified as Marketing (0.1706 SAR) instead of Utility (0.040 SAR).
+        That's 4× the cost per message. Audit your templates.
+      </p>
+      <p>
+        <strong>2. 24-hour window utilization:</strong> All service replies within 24h of a
+        user message are free. Batch post-purchase messages (confirmation + shipping + review request)
+        within that window.
+      </p>
+      <p>
+        <strong>3. Provider markup:</strong> At 5,000 marketing messages/month, a 20% markup
+        = ~170 SAR/month = ~2,040 SAR/year in unnecessary cost.
+      </p>
+    </section>
+
+    <!-- FULL ANALYSIS LINK -->
+    <div class="cta-section">
+      <h3>Full Arabic-language analysis for the Saudi market</h3>
+      <p>
+        Provider comparisons, sector-specific ROI breakdowns, and step-by-step activation guides
+        — all in Arabic, built for Saudi businesses.
+      </p>
+      <div class="cta-links">
+        <a class="cta-link-primary" href="https://zidnitech.com/whatsapp-api-pricing-plans-saudi-arabia/" rel="noopener" target="_blank">
+          WhatsApp API Pricing Plans →
+        </a>
+        <a class="cta-link-secondary" href="https://zidnitech.com/whatsapp-api-cost-saudi-arabia/" rel="noopener" target="_blank">
+          Full Cost Breakdown
+        </a>
+        <a class="cta-link-secondary" href="https://zidnitech.com/best-whatsapp-api-saudi-arabia-2026/" rel="noopener" target="_blank">
+          Provider Comparison 2026
+        </a>
+      </div>
+    </div>
+
+  </main>
+
+  <footer>
+    <span>Data sourced from Meta Business Platform official pricing + provider documentation</span>
+    <span>zidnitech.com · research · 2026</span>
+  </footer>
+
+</body>
+</html>
