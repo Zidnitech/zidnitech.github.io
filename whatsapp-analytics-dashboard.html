@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WhatsApp Campaign Analytics Dashboard — Full Stack Guide</title>
+  <meta name="description" content="A complete open-source dashboard for WhatsApp campaign analytics. React frontend, Node.js backend, MongoDB. Track message delivery, response rates, and campaign ROI in real time." />
+  <meta name="keywords" content="WhatsApp API analytics, campaign dashboard, React Node.js MongoDB, WhatsApp metrics, open source" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Azeret+Mono:wght@300;400;500;600&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400&display=swap" rel="stylesheet" />
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #070809;
+      --s1:       #0c0e10;
+      --s2:       #111416;
+      --border:   #1c2026;
+      --border2:  #252c33;
+      --lime:     #b5f23d;
+      --cyan:     #38d9f5;
+      --orange:   #ff8c42;
+      --red:      #ff5050;
+      --muted:    #5a6370;
+      --text:     #c8d4dc;
+      --mono:     'Azeret Mono', monospace;
+      --serif:    'Libre Baskerville', Georgia, serif;
+      --sans:     'DM Sans', sans-serif;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      font-size: 15px;
+      line-height: 1.75;
+      min-height: 100vh;
+    }
+
+    .chrome {
+      background: var(--s1);
+      border-bottom: 1px solid var(--border);
+      padding: 0.65rem 1.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+    .chrome-dot { width: 9px; height: 9px; border-radius: 50%; }
+    .cd-r { background: #ff5f57; }
+    .cd-y { background: #febc2e; }
+    .cd-g { background: #28c840; }
+    .chrome-title {
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      color: var(--muted);
+      margin-left: 1rem;
+      letter-spacing: 0.04em;
+    }
+    .chrome-title span { color: var(--lime); }
+    .chrome-pills { margin-left: auto; display: flex; gap: 0.5rem; }
+    .pill {
+      font-family: var(--mono);
+      font-size: 0.6rem;
+      letter-spacing: 0.08em;
+      padding: 0.15rem 0.6rem;
+      border-radius: 20px;
+      border: 1px solid var(--border2);
+      color: var(--muted);
+    }
+    .pill.active { border-color: rgba(181,242,61,.3); color: var(--lime); background: rgba(181,242,61,.05); }
+
+    .hero { max-width: 860px; margin: 0 auto; padding: 5rem 2rem 2rem; }
+    .hero-eyebrow {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: var(--lime);
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .hero-eyebrow::before { content: '▸'; }
+    h1 {
+      font-family: var(--serif);
+      font-size: clamp(1.9rem, 4.5vw, 2.9rem);
+      font-weight: 700;
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+      margin-bottom: 1.25rem;
+    }
+    h1 em { font-style: italic; color: var(--lime); }
+    .hero-desc { color: var(--muted); font-size: 1rem; max-width: 580px; margin-bottom: 2.5rem; }
+
+    .stack-row { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.5rem; }
+    .stack-badge {
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      padding: 0.3rem 0.85rem;
+      border-radius: 4px;
+      border: 1px solid var(--border2);
+    }
+    .sb-react  { color: var(--cyan);   border-color: rgba(56,217,245,.2);  background: rgba(56,217,245,.05); }
+    .sb-node   { color: var(--lime);   border-color: rgba(181,242,61,.2);  background: rgba(181,242,61,.05); }
+    .sb-mongo  { color: #5dde7a;       border-color: rgba(93,222,122,.2);  background: rgba(93,222,122,.05); }
+    .sb-wa     { color: var(--orange); border-color: rgba(255,140,66,.2);  background: rgba(255,140,66,.05); }
+    .stack-arrow { color: var(--muted); font-family: var(--mono); font-size: 0.8rem; align-self: center; }
+
+    main { max-width: 860px; margin: 0 auto; padding: 0 2rem 6rem; }
+    section { margin: 3rem 0; }
+
+    h2 {
+      font-family: var(--serif);
+      font-size: 1.35rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+    .h2-tag {
+      font-family: var(--mono);
+      font-size: 0.62rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--lime);
+      background: rgba(181,242,61,.07);
+      border: 1px solid rgba(181,242,61,.15);
+      padding: 0.15rem 0.5rem;
+      border-radius: 3px;
+    }
+    h3 {
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      color: var(--orange);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin: 1.75rem 0 0.6rem;
+    }
+    p { color: #8a96a2; margin-bottom: 0.85rem; }
+
+    .cb-wrap {
+      background: #040506;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      margin: 1.25rem 0;
+    }
+    .cb-head {
+      background: var(--s2);
+      border-bottom: 1px solid var(--border);
+      padding: 0.5rem 1.1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: var(--mono);
+      font-size: 0.65rem;
+    }
+    .cb-lang { color: var(--orange); letter-spacing: 0.08em; }
+    .cb-file { color: var(--muted); }
+    pre {
+      padding: 1.2rem 1.4rem;
+      overflow-x: auto;
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      line-height: 1.9;
+    }
+    .k  { color: #c792ea; }
+    .f  { color: var(--cyan); }
+    .s  { color: #c3e88d; }
+    .n  { color: var(--lime); }
+    .c  { color: #3a4450; font-style: italic; }
+    .t  { color: var(--orange); }
+    .op { color: var(--muted); }
+    .v  { color: var(--text); }
+
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 0.75rem;
+      margin: 1.5rem 0;
+    }
+    .metric-card {
+      background: var(--s1);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem 1.1rem;
+    }
+    .metric-label {
+      font-family: var(--mono);
+      font-size: 0.62rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--muted);
+      margin-bottom: 0.4rem;
+    }
+    .metric-value { font-family: var(--mono); font-size: 1.5rem; font-weight: 600; line-height: 1; }
+    .mv-lime   { color: var(--lime); }
+    .mv-cyan   { color: var(--cyan); }
+    .mv-orange { color: var(--orange); }
+    .mv-red    { color: var(--red); }
+    .metric-sub { font-size: 0.75rem; color: var(--muted); margin-top: 0.3rem; font-family: var(--mono); }
+
+    .note {
+      background: var(--s1);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--cyan);
+      border-radius: 0 6px 6px 0;
+      padding: 0.9rem 1.1rem;
+      margin: 1.25rem 0;
+      font-size: 0.88rem;
+    }
+    .note-label {
+      font-family: var(--mono);
+      font-size: 0.6rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--cyan);
+      margin-bottom: 0.35rem;
+    }
+    .note p { color: var(--muted); margin: 0; }
+    .note strong { color: var(--text); }
+
+    .ep-list { list-style: none; margin: 1rem 0; }
+    .ep-list li {
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      display: flex;
+      gap: 0.75rem;
+      align-items: center;
+      padding: 0.4rem 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .ep-list li:last-child { border-bottom: none; }
+    .ep-method {
+      font-size: 0.62rem;
+      font-weight: 600;
+      padding: 0.15rem 0.45rem;
+      border-radius: 3px;
+      min-width: 44px;
+      text-align: center;
+    }
+    .m-get  { background: rgba(56,217,245,.12); color: var(--cyan); }
+    .m-post { background: rgba(181,242,61,.12); color: var(--lime); }
+    .m-del  { background: rgba(255,80,80,.1);  color: var(--red);  }
+    .ep-path { color: var(--text); }
+    .ep-desc { color: var(--muted); margin-left: auto; font-size: 0.68rem; }
+
+    .resources {
+      background: var(--s1);
+      border: 1px solid var(--border);
+      border-top: 2px solid var(--lime);
+      border-radius: 0 0 8px 8px;
+      padding: 2rem;
+      margin: 3.5rem 0 1.5rem;
+    }
+    .resources h3 {
+      font-family: var(--serif);
+      font-size: 1.1rem;
+      font-weight: 700;
+      text-transform: none;
+      letter-spacing: 0;
+      color: var(--text);
+      margin: 0 0 0.4rem;
+    }
+    .res-sub { font-size: 0.85rem; color: var(--muted); margin-bottom: 1.5rem; }
+    .res-items { display: flex; flex-direction: column; gap: 0.65rem; }
+    .res-item {
+      display: flex;
+      gap: 0.9rem;
+      align-items: flex-start;
+      background: var(--s2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.8rem 1rem;
+      text-decoration: none;
+      transition: border-color .15s;
+    }
+    .res-item:hover { border-color: var(--lime); text-decoration: none; }
+    .res-num {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      color: var(--lime);
+      background: rgba(181,242,61,.07);
+      border: 1px solid rgba(181,242,61,.15);
+      padding: 0.2rem 0.45rem;
+      border-radius: 3px;
+      flex-shrink: 0;
+      margin-top: 0.1rem;
+    }
+    .res-title { color: var(--text); font-size: 0.88rem; font-weight: 500; }
+    .res-desc  { color: var(--muted); font-size: 0.76rem; margin-top: 0.15rem; }
+
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 1.25rem 2rem;
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      color: var(--muted);
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    a { color: var(--lime); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    @media (max-width: 600px) {
+      .chrome, main, .hero { padding-left: 1.25rem; padding-right: 1.25rem; }
+      .chrome-pills { display: none; }
+      .ep-desc { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="chrome">
+  <div class="chrome-dot cd-r"></div>
+  <div class="chrome-dot cd-y"></div>
+  <div class="chrome-dot cd-g"></div>
+  <div class="chrome-title"><span>zidnitech</span> / whatsapp-analytics-dashboard</div>
+  <div class="chrome-pills">
+    <span class="pill active">React 18</span>
+    <span class="pill active">Node.js</span>
+    <span class="pill active">MongoDB</span>
+    <span class="pill">Open Source</span>
+  </div>
+</div>
+
+<div class="hero">
+  <div class="hero-eyebrow">Full Stack Project · WhatsApp Campaign Analytics</div>
+  <h1>Dashboard for<br/><em>WhatsApp Campaigns</em><br/>That Actually Tell You Something</h1>
+  <p class="hero-desc">
+    A complete analytics stack connecting message delivery, response rates,
+    and campaign ROI into one real-time interface. React + Node.js + MongoDB.
+    No third-party analytics dependency.
+  </p>
+  <div class="stack-row">
+    <span class="stack-badge sb-wa">WhatsApp API</span>
+    <span class="stack-arrow">→</span>
+    <span class="stack-badge sb-node">Node.js / Express</span>
+    <span class="stack-arrow">→</span>
+    <span class="stack-badge sb-mongo">MongoDB</span>
+    <span class="stack-arrow">→</span>
+    <span class="stack-badge sb-react">React 18</span>
+  </div>
+</div>
+
+<main>
+
+  <section>
+    <h2><span class="h2-tag">01</span> What This Dashboard Tracks</h2>
+    <p>WhatsApp Business API gives you raw webhook events. This project aggregates them into metrics that actually inform campaign decisions.</p>
+    <div class="metrics-grid">
+      <div class="metric-card">
+        <div class="metric-label">Delivery Rate</div>
+        <div class="metric-value mv-lime">98.2%</div>
+        <div class="metric-sub">sent → delivered</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Read Rate</div>
+        <div class="metric-value mv-cyan">86.7%</div>
+        <div class="metric-sub">delivered → read</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Response Rate</div>
+        <div class="metric-value mv-orange">24.1%</div>
+        <div class="metric-sub">read → reply</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Opt-Out Rate</div>
+        <div class="metric-value mv-red">0.8%</div>
+        <div class="metric-sub">campaign health</div>
+      </div>
+    </div>
+    <div class="note">
+      <div class="note-label">Why these four matter</div>
+      <p>Delivery and read rates confirm infrastructure health. <strong>Response rate</strong> is the conversion metric. Opt-out rate is the quality signal — anything above 2% on a single campaign requires immediate review.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="h2-tag">02</span> Architecture Overview</h2>
+
+    <h3>// Backend — Node.js / Express</h3>
+    <div class="cb-wrap">
+      <div class="cb-head"><span class="cb-lang">JAVASCRIPT</span><span class="cb-file">server/index.js</span></div>
+      <pre><span class="k">const</span> <span class="v">express</span>  <span class="op">=</span> <span class="f">require</span>(<span class="s">'express'</span>);
+<span class="k">const</span> <span class="v">mongoose</span> <span class="op">=</span> <span class="f">require</span>(<span class="s">'mongoose'</span>);
+<span class="k">const</span> <span class="v">app</span> <span class="op">=</span> <span class="f">express</span>();
+<span class="v">app</span>.<span class="f">use</span>(<span class="f">require</span>(<span class="s">'cors'</span>)());
+<span class="v">app</span>.<span class="f">use</span>(<span class="v">express</span>.<span class="f">json</span>());
+
+<span class="c">// ── Receive WhatsApp status events</span>
+<span class="v">app</span>.<span class="f">post</span>(<span class="s">'/webhook'</span>, <span class="k">async</span> (<span class="v">req</span>, <span class="v">res</span>) <span class="op">=></span> {
+  <span class="k">const</span> <span class="v">statuses</span> <span class="op">=</span>
+    <span class="v">req</span>.body?.entry?.[<span class="n">0</span>]?.changes?.[<span class="n">0</span>]?.value?.statuses;
+
+  <span class="k">if</span> (<span class="v">statuses</span>) {
+    <span class="k">for</span> (<span class="k">const</span> <span class="v">s</span> <span class="k">of</span> <span class="v">statuses</span>) {
+      <span class="k">await</span> <span class="t">MessageEvent</span>.<span class="f">findOneAndUpdate</span>(
+        { <span class="v">messageId</span>: <span class="v">s</span>.id },
+        { <span class="v">status</span>: <span class="v">s</span>.status, <span class="v">timestamp</span>: <span class="v">s</span>.timestamp,
+          <span class="v">recipientId</span>: <span class="v">s</span>.recipient_id },
+        { <span class="v">upsert</span>: <span class="k">true</span> }
+      );
+    }
+  }
+  <span class="v">res</span>.<span class="f">sendStatus</span>(<span class="n">200</span>);
+});
+
+<span class="v">mongoose</span>.<span class="f">connect</span>(<span class="v">process</span>.env.<span class="v">MONGO_URI</span>)
+  .<span class="f">then</span>(() <span class="op">=></span> <span class="v">app</span>.<span class="f">listen</span>(<span class="n">4000</span>));</pre>
+    </div>
+
+    <h3>// MongoDB Schema</h3>
+    <div class="cb-wrap">
+      <div class="cb-head"><span class="cb-lang">JAVASCRIPT</span><span class="cb-file">server/models/MessageEvent.js</span></div>
+      <pre><span class="k">const</span> <span class="v">schema</span> <span class="op">=</span> <span class="k">new</span> <span class="t">Schema</span>({
+  messageId:   { <span class="v">type</span>: <span class="t">String</span>, <span class="v">required</span>: <span class="k">true</span>, <span class="v">unique</span>: <span class="k">true</span> },
+  campaignId:  { <span class="v">type</span>: <span class="t">String</span>, <span class="v">index</span>: <span class="k">true</span> },
+  recipientId: <span class="t">String</span>,
+  status:      { <span class="v">type</span>: <span class="t">String</span>,
+                 <span class="v">enum</span>: [<span class="s">'sent'</span>,<span class="s">'delivered'</span>,<span class="s">'read'</span>,<span class="s">'failed'</span>] },
+  timestamp:   <span class="t">Number</span>,
+  replied:     { <span class="v">type</span>: <span class="t">Boolean</span>, <span class="v">default</span>: <span class="k">false</span> },
+  optedOut:    { <span class="v">type</span>: <span class="t">Boolean</span>, <span class="v">default</span>: <span class="k">false</span> },
+  createdAt:   { <span class="v">type</span>: <span class="t">Date</span>,    <span class="v">default</span>: <span class="t">Date</span>.now }
+});</pre>
+    </div>
+
+    <h3>// API Endpoints</h3>
+    <ul class="ep-list">
+      <li><span class="ep-method m-post">POST</span><span class="ep-path">/webhook</span><span class="ep-desc">Receive WhatsApp status events</span></li>
+      <li><span class="ep-method m-get">GET</span><span class="ep-path">/api/campaigns/:id/stats</span><span class="ep-desc">Delivery, read, response rates</span></li>
+      <li><span class="ep-method m-get">GET</span><span class="ep-path">/api/campaigns</span><span class="ep-desc">List all campaigns + summary</span></li>
+      <li><span class="ep-method m-get">GET</span><span class="ep-path">/api/metrics/timeseries</span><span class="ep-desc">Hourly counts for charts</span></li>
+      <li><span class="ep-method m-del">DEL</span><span class="ep-path">/api/campaigns/:id</span><span class="ep-desc">Archive campaign data</span></li>
+    </ul>
+  </section>
+
+  <section>
+    <h2><span class="h2-tag">03</span> React Frontend — Metrics Hook</h2>
+
+    <div class="cb-wrap">
+      <div class="cb-head"><span class="cb-lang">JAVASCRIPT</span><span class="cb-file">src/hooks/useCampaignStats.js</span></div>
+      <pre><span class="k">import</span> { <span class="v">useState</span>, <span class="v">useEffect</span> } <span class="k">from</span> <span class="s">'react'</span>;
+
+<span class="k">export function</span> <span class="f">useCampaignStats</span>(<span class="v">campaignId</span>) {
+  <span class="k">const</span> [<span class="v">stats</span>,   <span class="f">setStats</span>  ] <span class="op">=</span> <span class="f">useState</span>(<span class="k">null</span>);
+  <span class="k">const</span> [<span class="v">loading</span>, <span class="f">setLoading</span>] <span class="op">=</span> <span class="f">useState</span>(<span class="k">true</span>);
+
+  <span class="f">useEffect</span>(() <span class="op">=></span> {
+    <span class="k">const</span> <span class="f">load</span> <span class="op">=</span> <span class="k">async</span> () <span class="op">=></span> {
+      <span class="k">const</span> <span class="v">res</span>  <span class="op">=</span> <span class="k">await</span> <span class="f">fetch</span>(<span class="s">`/api/campaigns/${campaignId}/stats`</span>);
+      <span class="k">const</span> <span class="v">data</span> <span class="op">=</span> <span class="k">await</span> <span class="v">res</span>.<span class="f">json</span>();
+      <span class="f">setStats</span>(<span class="v">data</span>); <span class="f">setLoading</span>(<span class="k">false</span>);
+    };
+    <span class="f">load</span>();
+    <span class="k">const</span> <span class="v">t</span> <span class="op">=</span> <span class="f">setInterval</span>(<span class="v">load</span>, <span class="n">30_000</span>); <span class="c">// poll every 30s</span>
+    <span class="k">return</span> () <span class="op">=></span> <span class="f">clearInterval</span>(<span class="v">t</span>);
+  }, [<span class="v">campaignId</span>]);
+
+  <span class="k">return</span> { <span class="v">stats</span>, <span class="v">loading</span> };
+}</pre>
+    </div>
+
+    <h3>// MongoDB Aggregation Pipeline</h3>
+    <div class="cb-wrap">
+      <div class="cb-head"><span class="cb-lang">JAVASCRIPT</span><span class="cb-file">server/routes/campaigns.js</span></div>
+      <pre><span class="k">const</span> <span class="v">stats</span> <span class="op">=</span> <span class="k">await</span> <span class="t">MessageEvent</span>.<span class="f">aggregate</span>([
+  { <span class="v">$match</span>: { <span class="v">campaignId</span>: <span class="v">req</span>.params.id } },
+  {
+    <span class="v">$group</span>: {
+      <span class="v">_id</span>:       <span class="k">null</span>,
+      <span class="v">total</span>:     { <span class="v">$sum</span>: <span class="n">1</span> },
+      <span class="v">delivered</span>: { <span class="v">$sum</span>: { <span class="v">$cond</span>: [{ <span class="v">$eq</span>: [<span class="s">'$status'</span>,<span class="s">'delivered'</span>]},<span class="n">1</span>,<span class="n">0</span>] }},
+      <span class="v">read</span>:      { <span class="v">$sum</span>: { <span class="v">$cond</span>: [{ <span class="v">$eq</span>: [<span class="s">'$status'</span>,<span class="s">'read'</span>]},<span class="n">1</span>,<span class="n">0</span>] }},
+      <span class="v">replied</span>:   { <span class="v">$sum</span>: { <span class="v">$cond</span>: [<span class="s">'$replied'</span>,<span class="n">1</span>,<span class="n">0</span>] }},
+      <span class="v">optedOut</span>:  { <span class="v">$sum</span>: { <span class="v">$cond</span>: [<span class="s">'$optedOut'</span>,<span class="n">1</span>,<span class="n">0</span>] }}
+    }
+  },
+  {
+    <span class="v">$project</span>: {
+      <span class="v">deliveryRate</span>: { <span class="v">$divide</span>: [<span class="s">'$delivered'</span>,<span class="s">'$total'</span>] },
+      <span class="v">readRate</span>:     { <span class="v">$divide</span>: [<span class="s">'$read'</span>,<span class="s">'$delivered'</span>] },
+      <span class="v">responseRate</span>: { <span class="v">$divide</span>: [<span class="s">'$replied'</span>,<span class="s">'$read'</span>] },
+      <span class="v">optOutRate</span>:   { <span class="v">$divide</span>: [<span class="s">'$optedOut'</span>,<span class="s">'$total'</span>] }
+    }
+  }
+]);</pre>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="h2-tag">04</span> Setup in 5 Minutes</h2>
+    <div class="cb-wrap">
+      <div class="cb-head"><span class="cb-lang">BASH</span><span class="cb-file">terminal</span></div>
+      <pre><span class="c"># Clone and install</span>
+<span class="f">git</span> clone https://github.com/YOUR_USERNAME/whatsapp-analytics-dashboard
+<span class="f">cd</span> whatsapp-analytics-dashboard
+<span class="f">npm</span> install --prefix server
+<span class="f">npm</span> install --prefix client
+<span class="f">cp</span> server/.env.example server/.env</pre>
+    </div>
+    <div class="cb-wrap">
+      <div class="cb-head"><span class="cb-lang">ENV</span><span class="cb-file">server/.env</span></div>
+      <pre><span class="v">MONGO_URI</span><span class="op">=</span><span class="s">mongodb+srv://user:pass@cluster.mongodb.net/wa-analytics</span>
+<span class="v">WHATSAPP_VERIFY_TOKEN</span><span class="op">=</span><span class="s">your_verify_token</span>
+<span class="v">WHATSAPP_TOKEN</span><span class="op">=</span><span class="s">your_meta_access_token</span>
+<span class="v">PORT</span><span class="op">=</span><span class="n">4000</span></pre>
+    </div>
+    <div class="cb-wrap">
+      <div class="cb-head"><span class="cb-lang">BASH</span><span class="cb-file">terminal</span></div>
+      <pre><span class="f">npm</span> run dev
+<span class="c"># Server → http://localhost:4000</span>
+<span class="c"># Client → http://localhost:3000</span>
+<span class="c"># Webhook → https://your-domain.com/webhook</span></pre>
+    </div>
+  </section>
+
+  <div class="resources">
+    <h3>Business Context & Campaign Strategy</h3>
+    <p class="res-sub">The technical layer is only useful if the campaigns feeding it are well-structured. These guides cover the strategic side — in Arabic, for the Saudi/GCC market where WhatsApp analytics is most advanced, but the frameworks are universal.</p>
+    <div class="res-items">
+      <a class="res-item" href="https://zidnitech.com/whatsapp-analytics-increase-sales-guide/" rel="noopener" target="_blank">
+        <div class="res-num">01</div>
+        <div>
+          <div class="res-title">WhatsApp Analytics: How to Measure Campaign Success</div>
+          <div class="res-desc">The metrics that actually predict revenue — beyond delivery rates. Arabic-language guide.</div>
+        </div>
+      </a>
+      <a class="res-item" href="https://zidnitech.com/whatsapp-broadcast-marketing/" rel="noopener" target="_blank">
+        <div class="res-num">02</div>
+        <div>
+          <div class="res-title">WhatsApp Broadcast Marketing: The Full Playbook</div>
+          <div class="res-desc">Campaign structure, segmentation strategy, and sequence design. Arabic-language guide.</div>
+        </div>
+      </a>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  <span>MIT Licensed · Fork and adapt freely</span>
+  <span>zidnitech.com · developer resources · 2026</span>
+</footer>
+
+</body>
+</html>
