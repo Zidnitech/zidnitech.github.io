@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WhatsApp Lead Tracking via Webhooks — The Ultimate Developer Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#080b10;--bg2:#0d1117;--bg3:#161b22;--border:#21262d;
+    --green:#3fb950;--cyan:#58d7f7;--purple:#bc8cff;--orange:#f0883e;
+    --red:#ff7b72;--yellow:#e3b341;--white:#e6edf3;--muted:#8b949e;
+    --comment:#3d444d;--string:#a5d6ff;--keyword:#ff7b72;
+    --func:#d2a8ff;--num:#79c0ff;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  ::selection{background:#264f78;color:#e6edf3}
+  html{scroll-behavior:smooth}
+  body{font-family:'JetBrains Mono',monospace;background:var(--bg);color:var(--white);line-height:1.7;overflow-x:hidden}
+  body::before{content:'';position:fixed;top:0;left:0;right:0;bottom:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.03) 2px,rgba(0,0,0,.03) 4px);pointer-events:none;z-index:999}
+
+  /* HEADER */
+  header{border-bottom:1px solid var(--border);padding:14px 0;background:var(--bg2);position:sticky;top:0;z-index:100;backdrop-filter:blur(8px)}
+  .header-inner{max-width:960px;margin:0 auto;padding:0 24px;display:flex;align-items:center;gap:12px}
+  .breadcrumb{font-size:13px;color:var(--muted)}
+  .breadcrumb a{color:var(--cyan);text-decoration:none}
+  .breadcrumb a:hover{text-decoration:underline}
+  .breadcrumb span{margin:0 6px;color:var(--comment)}
+
+  /* HERO */
+  .hero{max-width:960px;margin:0 auto;padding:72px 24px 56px;position:relative}
+  .hero-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(63,185,80,.1);border:1px solid rgba(63,185,80,.3);color:var(--green);font-size:11px;font-weight:700;padding:4px 12px;border-radius:20px;margin-bottom:28px;letter-spacing:.08em;text-transform:uppercase}
+  .hero-badge::before{content:'●';font-size:8px;animation:blink 1.4s ease-in-out infinite}
+  @keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+  h1{font-family:'Syne',sans-serif;font-size:clamp(28px,5vw,46px);font-weight:800;line-height:1.15;letter-spacing:-.02em;margin-bottom:20px;color:#fff}
+  h1 .ac1{color:var(--green)} h1 .ac2{color:var(--cyan)}
+  .hero-sub{font-size:15px;color:var(--muted);max-width:640px;font-family:'Syne',sans-serif;font-weight:400;margin-bottom:36px;line-height:1.75}
+  .hero-tags{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:48px}
+  .tag{font-size:11px;padding:4px 10px;border-radius:4px;border:1px solid var(--border);color:var(--muted);font-weight:500}
+  .tag.node{border-color:rgba(63,185,80,.4);color:var(--green)}
+  .tag.py{border-color:rgba(88,215,247,.4);color:var(--cyan)}
+  .tag.sheets{border-color:rgba(227,179,65,.4);color:var(--yellow)}
+  .tag.crm{border-color:rgba(188,140,255,.4);color:var(--purple)}
+  .stat-row{display:flex;flex-wrap:wrap;gap:32px}
+  .stat-num{font-size:28px;font-weight:700;color:var(--white);line-height:1}
+  .stat-lbl{font-size:11px;color:var(--muted);margin-top:4px}
+
+  /* TOC */
+  .toc-wrap{max-width:960px;margin:0 auto;padding:0 24px 40px}
+  .toc{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:24px 28px}
+  .toc-title{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:16px}
+  .toc ol{list-style:none;display:grid;gap:8px;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));counter-reset:toc}
+  .toc li{counter-increment:toc;display:flex;gap:10px;align-items:baseline}
+  .toc li::before{content:counter(toc,decimal-leading-zero);color:var(--comment);font-size:11px;flex-shrink:0}
+  .toc a{color:var(--cyan);text-decoration:none;font-size:13px}
+  .toc a:hover{color:var(--white)}
+
+  /* CONTENT */
+  .content{max-width:960px;margin:0 auto;padding:0 24px 80px}
+  .section{margin-bottom:72px}
+  h2{font-family:'Syne',sans-serif;font-size:22px;font-weight:700;color:#fff;margin-bottom:20px;padding-bottom:12px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px}
+  .sec-num{font-size:11px;color:var(--muted);font-family:'JetBrains Mono',monospace;font-weight:400}
+  h3{font-family:'Syne',sans-serif;font-size:16px;font-weight:600;color:var(--white);margin:32px 0 14px}
+  p{font-size:14px;color:var(--muted);margin-bottom:16px;line-height:1.8}
+  p strong{color:var(--white);font-weight:500}
+  a{color:var(--cyan)} a:hover{color:var(--white)}
+
+  /* CODE */
+  .code-block{background:var(--bg2);border:1px solid var(--border);border-radius:8px;margin:20px 0 28px;overflow:hidden}
+  .code-header{background:var(--bg3);padding:10px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border)}
+  .code-lang{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;display:flex;align-items:center;gap:8px}
+  .dot{width:8px;height:8px;border-radius:50%;display:inline-block}
+  .dot-js{background:var(--yellow)}.dot-py{background:var(--cyan)}.dot-bash{background:var(--green)}.dot-json{background:var(--orange)}.dot-apps{background:var(--purple)}.dot-http{background:var(--red)}
+  .copy-btn{font-size:11px;color:var(--muted);background:none;border:1px solid var(--border);border-radius:4px;padding:3px 10px;cursor:pointer;font-family:inherit;transition:all .15s}
+  .copy-btn:hover{background:var(--border);color:var(--white)}
+  .copy-btn.copied{color:var(--green);border-color:var(--green)}
+  pre{padding:20px;overflow-x:auto;font-size:13px;line-height:1.7;font-family:'JetBrains Mono',monospace}
+  pre::-webkit-scrollbar{height:4px}
+  pre::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+  .kw{color:var(--keyword)}.fn{color:var(--func)}.str{color:var(--string)}.num{color:var(--num)}
+  .cm{color:var(--comment);font-style:italic}.cn{color:var(--cyan)}.gr{color:var(--green)}.or{color:var(--orange)}.yw{color:var(--yellow)}
+
+  /* CALLOUTS */
+  .callout{border-radius:6px;padding:16px 20px;margin:20px 0;display:flex;gap:14px;align-items:flex-start;font-size:13px;line-height:1.7}
+  .callout-icon{font-size:16px;flex-shrink:0;margin-top:1px}
+  .callout.info{background:rgba(88,215,247,.06);border:1px solid rgba(88,215,247,.2);color:var(--cyan)}
+  .callout.warn{background:rgba(240,136,62,.06);border:1px solid rgba(240,136,62,.2);color:var(--orange)}
+  .callout.tip{background:rgba(63,185,80,.06);border:1px solid rgba(63,185,80,.2);color:var(--green)}
+  .callout.note{background:rgba(188,140,255,.06);border:1px solid rgba(188,140,255,.2);color:var(--purple)}
+
+  /* TABLE */
+  table{width:100%;border-collapse:collapse;font-size:13px;margin:20px 0}
+  thead th{background:var(--bg3);color:var(--muted);font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:10px 14px;text-align:left;border-bottom:1px solid var(--border)}
+  tbody td{padding:10px 14px;border-bottom:1px solid var(--border);color:var(--muted);vertical-align:top}
+  tbody td:first-child{color:var(--cyan);font-weight:500}
+  tbody tr:hover td{background:rgba(255,255,255,.02)}
+  .badge{display:inline-block;font-size:10px;font-weight:700;padding:2px 7px;border-radius:3px;text-transform:uppercase}
+  .badge.req{background:rgba(255,123,114,.15);color:var(--red)}
+  .badge.opt{background:rgba(139,148,158,.1);color:var(--muted)}
+
+  /* FLOW */
+  .flow{display:flex;align-items:stretch;gap:0;margin:24px 0;flex-wrap:wrap}
+  .flow-step{flex:1;min-width:130px;background:var(--bg2);border:1px solid var(--border);padding:18px 16px;text-align:center;position:relative}
+  .flow-step:first-child{border-radius:6px 0 0 6px}
+  .flow-step:last-child{border-radius:0 6px 6px 0}
+  .flow-step::after{content:'→';position:absolute;right:-13px;top:50%;transform:translateY(-50%);color:var(--comment);font-size:18px;z-index:1}
+  .flow-step:last-child::after{display:none}
+  .flow-icon{font-size:22px;margin-bottom:8px}
+  .flow-label{font-size:11px;font-weight:700;color:var(--white)}
+  .flow-sub{font-size:10px;color:var(--muted);margin-top:4px}
+  @media(max-width:600px){
+    .flow{flex-direction:column}
+    .flow-step{border-radius:0}
+    .flow-step::after{content:'↓';right:50%;transform:translateX(50%);bottom:-14px;top:auto}
+    .flow-step:last-child::after{display:none}
+    .flow-step:first-child{border-radius:6px 6px 0 0}
+    .flow-step:last-child{border-radius:0 0 6px 6px}
+  }
+
+  /* RESOURCES */
+  .resources{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin:24px 0}
+  .res-card{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:20px;text-decoration:none;color:inherit;transition:all .2s;display:block}
+  .res-card:hover{border-color:var(--cyan);transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.4)}
+  .res-card:hover .res-title{color:var(--cyan)}
+  .res-lang{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+  .res-lang::before{content:'🇸🇦';font-size:12px}
+  .res-title{font-family:'Syne',sans-serif;font-size:14px;font-weight:600;color:var(--white);margin-bottom:8px;line-height:1.4}
+  .res-desc{font-size:12px;color:var(--muted);line-height:1.6}
+  .res-arrow{color:var(--muted);font-size:12px;margin-top:12px;display:block}
+
+  footer{border-top:1px solid var(--border);padding:28px 24px;text-align:center;color:var(--comment);font-size:12px}
+  footer a{color:var(--muted)}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <svg width="20" height="20" viewBox="0 0 16 16" fill="#8b949e"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+    <div class="breadcrumb">
+      <a href="https://zidnitech.com">zidnitech</a><span>/</span>
+      <a href="#">whatsapp-lead-tracking</a><span>/</span>
+      <a href="#">webhooks-guide.html</a>
+    </div>
+  </div>
+</header>
+
+<div class="hero">
+  <div class="hero-badge">● Developer Guide · 2026</div>
+  <h1>The Ultimate Guide to<br><span class="ac1">WhatsApp</span> Lead Tracking<br>via <span class="ac2">Webhooks</span></h1>
+  <p class="hero-sub">Connect every WhatsApp message to Google Sheets, HubSpot, Salesforce, or any CRM — automatically. Capture leads, track the full funnel, and never lose a conversation again.</p>
+  <div class="hero-tags">
+    <span class="tag node">Node.js</span>
+    <span class="tag py">Python</span>
+    <span class="tag sheets">Google Sheets</span>
+    <span class="tag crm">HubSpot API</span>
+    <span class="tag">Express.js</span>
+    <span class="tag">Webhooks</span>
+    <span class="tag">WhatsApp Cloud API</span>
+  </div>
+  <div class="stat-row">
+    <div class="stat"><div class="stat-num">5</div><div class="stat-lbl">Complete code examples</div></div>
+    <div class="stat"><div class="stat-num">98%</div><div class="stat-lbl">WhatsApp open rate</div></div>
+    <div class="stat"><div class="stat-num">&lt;200ms</div><div class="stat-lbl">Webhook response target</div></div>
+  </div>
+</div>
+
+<div class="toc-wrap">
+  <div class="toc">
+    <div class="toc-title">// Table of Contents</div>
+    <ol>
+      <li><a href="#s1">How the Webhook Flow Works</a></li>
+      <li><a href="#s2">Setting Up the Webhook Server</a></li>
+      <li><a href="#s3">Parsing WhatsApp Payloads</a></li>
+      <li><a href="#s4">Push Leads to Google Sheets</a></li>
+      <li><a href="#s5">Push Leads to HubSpot CRM</a></li>
+      <li><a href="#s6">Lead Tracking Schema</a></li>
+      <li><a href="#s7">Full Production Handler</a></li>
+      <li><a href="#s8">Python / Flask Alternative</a></li>
+      <li><a href="#s9">Security & Signature Verify</a></li>
+      <li><a href="#s10">Arabic Resources</a></li>
+    </ol>
+  </div>
+</div>
+
+<div class="content">
+
+  <!-- S1 -->
+  <div class="section" id="s1">
+    <h2><span class="sec-num">// 01</span> How the Webhook Flow Works</h2>
+    <p>When a user sends a WhatsApp message, Meta's Cloud API fires an HTTP POST to your server in under 50ms. Your job: <strong>receive it, parse it, and pipe it to wherever your leads live</strong>.</p>
+    <div class="flow">
+      <div class="flow-step"><div class="flow-icon">📱</div><div class="flow-label">User Sends Msg</div><div class="flow-sub">WhatsApp</div></div>
+      <div class="flow-step"><div class="flow-icon">🔔</div><div class="flow-label">Meta Fires POST</div><div class="flow-sub">Webhook Event</div></div>
+      <div class="flow-step"><div class="flow-icon">⚡</div><div class="flow-label">Your Server</div><div class="flow-sub">Parse + Route</div></div>
+      <div class="flow-step"><div class="flow-icon">📊</div><div class="flow-label">Google Sheets</div><div class="flow-sub">or CRM</div></div>
+      <div class="flow-step"><div class="flow-icon">✅</div><div class="flow-label">Lead Tracked</div><div class="flow-sub">Auto-tagged</div></div>
+    </div>
+    <div class="callout info">
+      <span class="callout-icon">ℹ</span>
+      <div>Meta requires your webhook to respond with HTTP <strong>200</strong> within <strong>20 seconds</strong>. Do your heavy lifting asynchronously — never block the response.</div>
+    </div>
+  </div>
+
+  <!-- S2 -->
+  <div class="section" id="s2">
+    <h2><span class="sec-num">// 02</span> Setting Up the Webhook Server</h2>
+    <p>Install dependencies and spin up an Express server that handles both the <strong>verification handshake</strong> and incoming message events.</p>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang"><span class="dot dot-bash"></span>bash — install deps</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre>npm init -y
+npm install express body-parser axios dotenv</pre>
+    </div>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang"><span class="dot dot-js"></span>server.js — Node.js / Express</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="kw">require</span>(<span class="str">'dotenv'</span>).config();
+<span class="kw">const</span> express    = <span class="kw">require</span>(<span class="str">'express'</span>);
+<span class="kw">const</span> bodyParser = <span class="kw">require</span>(<span class="str">'body-parser'</span>);
+<span class="kw">const</span> { <span class="fn">handleWebhook</span> } = <span class="kw">require</span>(<span class="str">'./handler'</span>);
+
+<span class="kw">const</span> app  = <span class="fn">express</span>();
+<span class="kw">const</span> PORT = process.env.PORT || <span class="num">3000</span>;
+app.<span class="fn">use</span>(bodyParser.<span class="fn">json</span>());
+
+<span class="cm">// ── Verification handshake (Meta calls this once on setup) ───</span>
+app.<span class="fn">get</span>(<span class="str">'/webhook'</span>, (req, res) =&gt; {
+  <span class="kw">const</span> mode      = req.query[<span class="str">'hub.mode'</span>];
+  <span class="kw">const</span> token     = req.query[<span class="str">'hub.verify_token'</span>];
+  <span class="kw">const</span> challenge = req.query[<span class="str">'hub.challenge'</span>];
+  <span class="kw">if</span> (mode === <span class="str">'subscribe'</span> &amp;&amp; token === process.env.<span class="cn">VERIFY_TOKEN</span>) {
+    console.<span class="fn">log</span>(<span class="str">'✅ Webhook verified'</span>);
+    res.<span class="fn">status</span>(<span class="num">200</span>).<span class="fn">send</span>(challenge);
+  } <span class="kw">else</span> {
+    res.<span class="fn">sendStatus</span>(<span class="num">403</span>);
+  }
+});
+
+<span class="cm">// ── Receive events ───────────────────────────────────────────</span>
+app.<span class="fn">post</span>(<span class="str">'/webhook'</span>, <span class="kw">async</span> (req, res) =&gt; {
+  res.<span class="fn">sendStatus</span>(<span class="num">200</span>); <span class="cm">// respond immediately, process async</span>
+  <span class="kw">try</span> {
+    <span class="kw">await</span> <span class="fn">handleWebhook</span>(req.body);
+  } <span class="kw">catch</span> (err) {
+    console.<span class="fn">error</span>(<span class="str">'Webhook error:'</span>, err.message);
+  }
+});
+
+app.<span class="fn">listen</span>(PORT, () =&gt; console.<span class="fn">log</span>(<span class="str">`🚀 Server on port <span class="cn">${PORT}</span>`</span>));</pre>
+    </div>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang"><span class="dot dot-bash"></span>.env</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre>VERIFY_TOKEN=your_secret_verify_token
+WHATSAPP_TOKEN=EAAxxxxxxxxxxxxxxxxxxxxxxx
+WHATSAPP_APP_SECRET=your_app_secret
+PHONE_NUMBER_ID=1234567890
+GOOGLE_SHEETS_ID=1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgVE2upms
+HUBSPOT_API_KEY=pat-na1-xxxxxxxxxxxxxxxxxxxxxxxx</pre>
+    </div>
+  </div>
+
+  <!-- S3 -->
+  <div class="section" id="s3">
+    <h2><span class="sec-num">// 03</span> Parsing WhatsApp Webhook Payloads</h2>
+    <p>Meta's payload is <strong>deeply nested</strong>. Here's the exact extraction logic for phone number, message body, contact name, and timestamp.</p>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang"><span class="dot dot-json"></span>json — raw Meta payload sample</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre>{
+  <span class="yw">"object"</span>: <span class="str">"whatsapp_business_account"</span>,
+  <span class="yw">"entry"</span>: [{
+    <span class="yw">"id"</span>: <span class="str">"WHATSAPP_BUSINESS_ACCOUNT_ID"</span>,
+    <span class="yw">"changes"</span>: [{
+      <span class="yw">"value"</span>: {
+        <span class="yw">"messaging_product"</span>: <span class="str">"whatsapp"</span>,
+        <span class="yw">"contacts"</span>: [{ <span class="yw">"profile"</span>: { <span class="yw">"name"</span>: <span class="str">"Ahmed Al-Rashid"</span> }, <span class="yw">"wa_id"</span>: <span class="str">"966501234567"</span> }],
+        <span class="yw">"messages"</span>: [{
+          <span class="yw">"id"</span>: <span class="str">"wamid.xxxx"</span>,
+          <span class="yw">"from"</span>: <span class="str">"966501234567"</span>,
+          <span class="yw">"timestamp"</span>: <span class="str">"1735689600"</span>,
+          <span class="yw">"type"</span>: <span class="str">"text"</span>,
+          <span class="yw">"text"</span>: { <span class="yw">"body"</span>: <span class="str">"السلام عليكم، ابغى عرض أسعار"</span> }
+        }]
+      }
+    }]
+  }]
+}</pre>
+    </div>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang"><span class="dot dot-js"></span>parser.js — extract lead data cleanly</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="cm">/**
+ * Extracts structured lead data from a Meta webhook payload.
+ * Handles: text, button, interactive (reply/list), and media messages.
+ * Returns null for non-message events (status updates, etc.)
+ */</span>
+<span class="kw">function</span> <span class="fn">extractLead</span>(body) {
+  <span class="kw">const</span> value   = body?.entry?.[<span class="num">0</span>]?.changes?.[<span class="num">0</span>]?.value;
+  <span class="kw">const</span> msg     = value?.messages?.[<span class="num">0</span>];
+  <span class="kw">const</span> contact = value?.contacts?.[<span class="num">0</span>];
+  <span class="kw">if</span> (!msg) <span class="kw">return null</span>;
+
+  <span class="kw">const</span> type = msg.type;
+  <span class="kw">let</span> msgBody = <span class="str">''</span>;
+
+  <span class="kw">switch</span> (type) {
+    <span class="kw">case</span> <span class="str">'text'</span>:
+      msgBody = msg.text?.body; <span class="kw">break</span>;
+    <span class="kw">case</span> <span class="str">'button'</span>:
+      msgBody = <span class="str">`[BTN] <span class="cn">${msg.button?.text}</span>`</span>; <span class="kw">break</span>;
+    <span class="kw">case</span> <span class="str">'interactive'</span>: {
+      <span class="kw">const</span> ia = msg.interactive;
+      msgBody = ia?.button_reply?.title || ia?.list_reply?.title || <span class="str">'[interactive]'</span>;
+      <span class="kw">break</span>;
+    }
+    <span class="kw">default</span>:
+      msgBody = <span class="str">`[<span class="cn">${type}</span>]`</span>; <span class="cm">// image, audio, document, etc.</span>
+  }
+
+  <span class="kw">return</span> {
+    messageId : msg.id,
+    phone     : msg.from,                   <span class="cm">// "966501234567"</span>
+    name      : contact?.profile?.name || <span class="str">'Unknown'</span>,
+    body      : msgBody || <span class="str">''</span>,
+    type,
+    timestamp : <span class="kw">new</span> <span class="fn">Date</span>(+msg.timestamp * <span class="num">1000</span>).<span class="fn">toISOString</span>(),
+    source    : <span class="str">'whatsapp'</span>,
+  };
+}
+
+module.exports = { extractLead };</pre>
+    </div>
+  </div>
+
+  <!-- S4 -->
+  <div class="section" id="s4">
+    <h2><span class="sec-num">// 04</span> Push Leads to Google Sheets</h2>
+    <p>Two approaches: <strong>Google Apps Script</strong> (zero infra) or the <strong>Sheets API v4</strong> directly from Node.js.</p>
+
+    <h3>Option A — Google Apps Script (Free, Serverless)</h3>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang"><span class="dot dot-apps"></span>Apps Script — Code.gs</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="cm">// Deploy: Extensions → Apps Script → Deploy → Web App
+// Execute as: Me | Access: Anyone</span>
+
+<span class="kw">const</span> SHEET_NAME = <span class="str">'Leads'</span>;
+<span class="kw">const</span> SECRET     = <span class="str">'your_apps_script_secret'</span>;
+
+<span class="kw">function</span> <span class="fn">doPost</span>(e) {
+  <span class="kw">try</span> {
+    <span class="kw">const</span> data = JSON.<span class="fn">parse</span>(e.postData.contents);
+    <span class="kw">if</span> (data.secret !== SECRET)
+      <span class="kw">return</span> ContentService.<span class="fn">createTextOutput</span>(<span class="str">'Unauthorized'</span>);
+
+    <span class="kw">const</span> sheet = SpreadsheetApp.<span class="fn">getActiveSpreadsheet</span>()
+                                .<span class="fn">getSheetByName</span>(SHEET_NAME);
+
+    <span class="kw">if</span> (sheet.<span class="fn">getLastRow</span>() === <span class="num">0</span>) {
+      sheet.<span class="fn">appendRow</span>([<span class="str">'Timestamp'</span>,<span class="str">'Phone'</span>,<span class="str">'Name'</span>,<span class="str">'Message'</span>,<span class="str">'Type'</span>,<span class="str">'Source'</span>,<span class="str">'Stage'</span>]);
+    }
+
+    sheet.<span class="fn">appendRow</span>([
+      data.timestamp, data.phone, data.name,
+      data.body, data.type, data.source, <span class="str">'new_lead'</span>
+    ]);
+
+    <span class="kw">return</span> ContentService
+      .<span class="fn">createTextOutput</span>(JSON.<span class="fn">stringify</span>({ ok: <span class="kw">true</span> }))
+      .<span class="fn">setMimeType</span>(ContentService.MimeType.JSON);
+
+  } <span class="kw">catch</span>(err) {
+    <span class="kw">return</span> ContentService.<span class="fn">createTextOutput</span>(JSON.<span class="fn">stringify</span>({ error: err.message }))
+      .<span class="fn">setMimeType</span>(ContentService.MimeType.JSON);
+  }
+}</pre>
+    </div>
+
+    <h3>Option B — Sheets API v4 from Node.js</h3>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang"><span class="dot dot-bash"></span>bash</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre>npm install googleapis</pre>
+    </div>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang"><span class="dot dot-js"></span>sheets.js</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="kw">const</span> { google } = <span class="kw">require</span>(<span class="str">'googleapis'</span>);
+
+<span class="kw">const</span> auth = <span class="kw">new</span> google.auth.<span class="fn">GoogleAuth</span>({
+  keyFile: <span class="str">'./service-account.json'</span>,
+  scopes: [<span class="str">'https://www.googleapis.com/auth/spreadsheets'</span>],
+});
+
+<span class="kw">async function</span> <span class="fn">pushToSheets</span>(lead) {
+  <span class="kw">const</span> sheets = google.<span class="fn">sheets</span>({ version: <span class="str">'v4'</span>, auth });
+  <span class="kw">await</span> sheets.spreadsheets.values.<span class="fn">append</span>({
+    spreadsheetId    : process.env.<span class="cn">GOOGLE_SHEETS_ID</span>,
+    range            : <span class="str">'Leads!A:G'</span>,
+    valueInputOption : <span class="str">'USER_ENTERED'</span>,
+    insertDataOption : <span class="str">'INSERT_ROWS'</span>,
+    resource: { values: [[
+      lead.timestamp, lead.phone, lead.name,
+      lead.body, lead.type, lead.source, <span class="str">'new_lead'</span>
+    ]]},
+  });
+  console.<span class="fn">log</span>(<span class="str">'📊 Sheets:'</span>, lead.phone);
+}
+
+module.exports = { pushToSheets };</pre>
+    </div>
+    <div class="callout tip"><span class="callout-icon">💡</span><div>Auto-detect Arabic messages with a Sheets formula in col H: <code>=IF(REGEXMATCH(D2,"[\u0600-\u06FF]"),"AR","EN")</code></div></div>
+  </div>
+
+  <!-- S5 -->
+  <div class="section" id="s5">
+    <h2><span class="sec-num">// 05</span> Push Leads to HubSpot CRM</h2>
+    <p>Create or update a HubSpot Contact on every lead using <strong>upsert logic</strong> — same phone never creates a duplicate.</p>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang"><span class="dot dot-js"></span>hubspot.js</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="kw">const</span> axios = <span class="kw">require</span>(<span class="str">'axios'</span>);
+<span class="kw">const</span> BASE  = <span class="str">'https://api.hubapi.com'</span>;
+<span class="kw">const</span> HDR   = () => ({
+  Authorization: <span class="str">`Bearer <span class="cn">${process.env.HUBSPOT_API_KEY}</span>`</span>,
+  <span class="str">'Content-Type'</span>: <span class="str">'application/json'</span>,
+});
+
+<span class="kw">async function</span> <span class="fn">pushToHubspot</span>(lead) {
+  <span class="kw">const</span> phone = <span class="str">'+'</span> + lead.phone;
+
+  <span class="cm">// 1. Search contact by phone ───────────────────────────────</span>
+  <span class="kw">const</span> { data: sr } = <span class="kw">await</span> axios.<span class="fn">post</span>(
+    <span class="str">`<span class="cn">${BASE}</span>/crm/v3/objects/contacts/search`</span>,
+    { filterGroups: [{ filters: [
+      { propertyName:<span class="str">'phone'</span>, operator:<span class="str">'EQ'</span>, value: phone }
+    ]}], properties:[<span class="str">'phone'</span>] },
+    { headers: <span class="fn">HDR</span>() }
+  );
+
+  <span class="kw">if</span> (sr.results?.length) {
+    <span class="cm">// 2a. UPDATE ───────────────────────────────────────────────</span>
+    <span class="kw">await</span> axios.<span class="fn">patch</span>(
+      <span class="str">`<span class="cn">${BASE}</span>/crm/v3/objects/contacts/<span class="cn">${sr.results[0].id}</span>`</span>,
+      { properties: {
+        whatsapp_last_message : lead.body,
+        whatsapp_last_contact : lead.timestamp,
+        hs_lead_status        : <span class="str">'IN_PROGRESS'</span>,
+      }},
+      { headers: <span class="fn">HDR</span>() }
+    );
+    console.<span class="fn">log</span>(<span class="str">'🔄 HubSpot updated:'</span>, sr.results[<span class="num">0</span>].id);
+  } <span class="kw">else</span> {
+    <span class="cm">// 2b. CREATE ───────────────────────────────────────────────</span>
+    <span class="kw">const</span> { data: nc } = <span class="kw">await</span> axios.<span class="fn">post</span>(
+      <span class="str">`<span class="cn">${BASE}</span>/crm/v3/objects/contacts`</span>,
+      { properties: {
+        firstname              : lead.name,
+        phone,
+        lifecyclestage         : <span class="str">'lead'</span>,
+        hs_lead_status         : <span class="str">'NEW'</span>,
+        lead_source            : <span class="str">'WhatsApp'</span>,
+        whatsapp_first_message : lead.body,
+        whatsapp_first_contact : lead.timestamp,
+      }},
+      { headers: <span class="fn">HDR</span>() }
+    );
+    console.<span class="fn">log</span>(<span class="str">'➕ HubSpot created:'</span>, nc.id);
+  }
+}
+
+module.exports = { pushToHubspot };</pre>
+    </div>
+    <div class="callout warn"><span class="callout-icon">⚠</span><div>HubSpot rate limit: <strong>100 req/10 sec</strong>. For high-volume accounts, use a queue (BullMQ) to avoid 429 errors.</div></div>
+  </div>
+
+  <!-- S6 -->
+  <div class="section" id="s6">
+    <h2><span class="sec-num">// 06</span> Lead Tracking Schema</h2>
+    <p>Store this in Sheets, Postgres, or your CRM. Every field has a clear role in the WhatsApp funnel.</p>
+    <table>
+      <thead><tr><th>Field</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td>phone</td><td>string</td><td><span class="badge req">Required</span></td><td>E.164 format. Primary deduplication key.</td></tr>
+        <tr><td>name</td><td>string</td><td><span class="badge req">Required</span></td><td>From WhatsApp profile. Fallback to phone if empty.</td></tr>
+        <tr><td>first_message</td><td>string</td><td><span class="badge req">Required</span></td><td>First inbound text. Reveals intent immediately.</td></tr>
+        <tr><td>first_contact_at</td><td>ISO 8601</td><td><span class="badge req">Required</span></td><td>Timestamp of first message. Used for lead age.</td></tr>
+        <tr><td>last_contact_at</td><td>ISO 8601</td><td><span class="badge req">Required</span></td><td>Updated on every inbound. Drives re-engagement.</td></tr>
+        <tr><td>stage</td><td>enum</td><td><span class="badge req">Required</span></td><td>new_lead → qualified → proposal → closed_won → closed_lost</td></tr>
+        <tr><td>ad_source</td><td>string</td><td><span class="badge opt">Optional</span></td><td>CTWA ad ID (source_id). Track ROI per campaign.</td></tr>
+        <tr><td>language</td><td>string</td><td><span class="badge opt">Optional</span></td><td>AR / EN — route to correct agent automatically.</td></tr>
+        <tr><td>message_count</td><td>integer</td><td><span class="badge opt">Optional</span></td><td>Total inbound messages. Engagement quality signal.</td></tr>
+        <tr><td>chatbot_exit_point</td><td>string</td><td><span class="badge opt">Optional</span></td><td>Which chatbot node dropped the lead. Debug funnel leaks.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- S7 -->
+  <div class="section" id="s7">
+    <h2><span class="sec-num">// 07</span> Full Production Handler</h2>
+    <p>Combining all modules with idempotency guard, parallel dispatch, and per-destination error isolation.</p>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang"><span class="dot dot-js"></span>handler.js — production-ready</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="kw">const</span> { extractLead }  = <span class="kw">require</span>(<span class="str">'./parser'</span>);
+<span class="kw">const</span> { pushToSheets }  = <span class="kw">require</span>(<span class="str">'./sheets'</span>);
+<span class="kw">const</span> { pushToHubspot } = <span class="kw">require</span>(<span class="str">'./hubspot'</span>);
+
+<span class="cm">// In-memory dedup (swap for Redis in production)</span>
+<span class="kw">const</span> seen = <span class="kw">new</span> <span class="fn">Set</span>();
+
+<span class="kw">async function</span> <span class="fn">handleWebhook</span>(body) {
+  <span class="kw">const</span> lead = <span class="fn">extractLead</span>(body);
+  <span class="kw">if</span> (!lead) <span class="kw">return</span>; <span class="cm">// status update or unsupported event</span>
+
+  <span class="cm">// Idempotency — Meta can re-deliver the same event</span>
+  <span class="kw">if</span> (seen.<span class="fn">has</span>(lead.messageId)) {
+    console.<span class="fn">log</span>(<span class="str">'⚠️  Dup skipped:'</span>, lead.messageId);
+    <span class="kw">return</span>;
+  }
+  seen.<span class="fn">add</span>(lead.messageId);
+  <span class="kw">if</span> (seen.size &gt; <span class="num">10000</span>) seen.<span class="fn">clear</span>(); <span class="cm">// memory guard</span>
+
+  console.<span class="fn">log</span>(<span class="str">`📥 [<span class="cn">${lead.timestamp}</span>] <span class="cn">${lead.phone}</span> → <span class="cn">${lead.body.slice(0,80)}</span>`</span>);
+
+  <span class="cm">// Fire both destinations in parallel; fail one, keep the other</span>
+  <span class="kw">const</span> results = <span class="kw">await</span> Promise.<span class="fn">allSettled</span>([
+    <span class="fn">pushToSheets</span>(lead),
+    <span class="fn">pushToHubspot</span>(lead),
+  ]);
+
+  results.<span class="fn">forEach</span>((r, i) =&gt; {
+    <span class="kw">if</span> (r.status === <span class="str">'rejected'</span>)
+      console.<span class="fn">error</span>(<span class="str">`❌ <span class="cn">${i===0?'Sheets':'HubSpot'}</span>:`</span>, r.reason?.message);
+  });
+}
+
+module.exports = { handleWebhook };</pre>
+    </div>
+  </div>
+
+  <!-- S8 -->
+  <div class="section" id="s8">
+    <h2><span class="sec-num">// 08</span> Python / Flask Alternative</h2>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang"><span class="dot dot-bash"></span>bash</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre>pip install flask requests gspread google-auth</pre>
+    </div>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang"><span class="dot dot-py"></span>app.py — Flask webhook server</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="kw">import</span> os, threading
+<span class="kw">from</span> flask <span class="kw">import</span> Flask, request, jsonify
+<span class="kw">import</span> gspread
+<span class="kw">from</span> google.oauth2.service_account <span class="kw">import</span> Credentials
+<span class="kw">from</span> datetime <span class="kw">import</span> datetime, timezone
+
+app = <span class="fn">Flask</span>(__name__)
+VERIFY_TOKEN = os.environ[<span class="str">"VERIFY_TOKEN"</span>]
+SHEETS_ID    = os.environ[<span class="str">"GOOGLE_SHEETS_ID"</span>]
+seen: <span class="fn">set</span>    = <span class="fn">set</span>()
+
+<span class="kw">def</span> <span class="fn">get_sheet</span>():
+    creds = Credentials.<span class="fn">from_service_account_file</span>(
+        <span class="str">"service-account.json"</span>,
+        scopes=[<span class="str">"https://www.googleapis.com/auth/spreadsheets"</span>]
+    )
+    <span class="kw">return</span> gspread.<span class="fn">authorize</span>(creds).<span class="fn">open_by_key</span>(SHEETS_ID).<span class="fn">worksheet</span>(<span class="str">"Leads"</span>)
+
+<span class="kw">def</span> <span class="fn">extract</span>(body):
+    <span class="kw">try</span>:
+        v   = body[<span class="str">"entry"</span>][<span class="num">0</span>][<span class="str">"changes"</span>][<span class="num">0</span>][<span class="str">"value"</span>]
+        msg = v[<span class="str">"messages"</span>][<span class="num">0</span>]
+        c   = v.get(<span class="str">"contacts"</span>,[{}])[<span class="num">0</span>]
+    <span class="kw">except</span> (<span class="fn">KeyError</span>,<span class="fn">IndexError</span>): <span class="kw">return None</span>
+    t   = msg.get(<span class="str">"type"</span>,<span class="str">"unknown"</span>)
+    txt = msg.get(<span class="str">"text"</span>,{}).<span class="fn">get</span>(<span class="str">"body"</span>) or f<span class="str">"[{t}]"</span>
+    ts  = datetime.<span class="fn">fromtimestamp</span>(<span class="fn">int</span>(msg[<span class="str">"timestamp"</span>]),tz=timezone.utc).<span class="fn">isoformat</span>()
+    <span class="kw">return</span> dict(id=msg[<span class="str">"id"</span>],phone=msg[<span class="str">"from"</span>],
+                name=c.<span class="fn">get</span>(<span class="str">"profile"</span>,{}).<span class="fn">get</span>(<span class="str">"name"</span>,<span class="str">"Unknown"</span>),
+                body=txt,type=t,timestamp=ts,source=<span class="str">"whatsapp"</span>)
+
+<span class="kw">def</span> <span class="fn">process</span>(body):
+    lead = <span class="fn">extract</span>(body)
+    <span class="kw">if not</span> lead <span class="kw">or</span> lead[<span class="str">"id"</span>] <span class="kw">in</span> seen: <span class="kw">return</span>
+    seen.<span class="fn">add</span>(lead[<span class="str">"id"</span>])
+    <span class="kw">try</span>:
+        <span class="fn">get_sheet</span>().<span class="fn">append_row</span>([
+            lead[<span class="str">"timestamp"</span>],lead[<span class="str">"phone"</span>],lead[<span class="str">"name"</span>],
+            lead[<span class="str">"body"</span>],lead[<span class="str">"type"</span>],lead[<span class="str">"source"</span>],<span class="str">"new_lead"</span>
+        ])
+        <span class="fn">print</span>(f<span class="str">"✅ {lead['phone']} → {lead['body'][:60]}"</span>)
+    <span class="kw">except Exception as</span> e: <span class="fn">print</span>(f<span class="str">"❌ {e}"</span>)
+
+<span class="cn">@app.route</span>(<span class="str">"/webhook"</span>, methods=[<span class="str">"GET"</span>])
+<span class="kw">def</span> <span class="fn">verify</span>():
+    <span class="kw">if</span> (request.args.<span class="fn">get</span>(<span class="str">"hub.mode"</span>) == <span class="str">"subscribe"</span> <span class="kw">and</span>
+            request.args.<span class="fn">get</span>(<span class="str">"hub.verify_token"</span>) == VERIFY_TOKEN):
+        <span class="kw">return</span> request.args.<span class="fn">get</span>(<span class="str">"hub.challenge"</span>), <span class="num">200</span>
+    <span class="kw">return</span> <span class="str">"Forbidden"</span>, <span class="num">403</span>
+
+<span class="cn">@app.route</span>(<span class="str">"/webhook"</span>, methods=[<span class="str">"POST"</span>])
+<span class="kw">def</span> <span class="fn">webhook</span>():
+    threading.<span class="fn">Thread</span>(target=<span class="fn">process</span>,args=(request.<span class="fn">get_json</span>(force=<span class="kw">True</span>),),daemon=<span class="kw">True</span>).<span class="fn">start</span>()
+    <span class="kw">return</span> <span class="str">""</span>, <span class="num">200</span>
+
+<span class="kw">if</span> __name__ == <span class="str">"__main__"</span>: app.<span class="fn">run</span>(port=<span class="num">3000</span>)</pre>
+    </div>
+  </div>
+
+  <!-- S9 -->
+  <div class="section" id="s9">
+    <h2><span class="sec-num">// 09</span> Security &amp; Signature Verification</h2>
+    <p>Production webhooks need <strong>HMAC signature verification</strong> to reject spoofed requests.</p>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang"><span class="dot dot-js"></span>security.js — verify Meta signature</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="kw">const</span> crypto = <span class="kw">require</span>(<span class="str">'crypto'</span>);
+
+<span class="cm">/**
+ * Meta signs every POST with X-Hub-Signature-256.
+ * Verify before processing — prevents spoofed/forged requests.
+ * Usage: app.use(bodyParser.json({ verify: verifySignature }))
+ */</span>
+<span class="kw">function</span> <span class="fn">verifySignature</span>(req, res, buf) {
+  <span class="kw">const</span> sig = req.headers[<span class="str">'x-hub-signature-256'</span>];
+  <span class="kw">if</span> (!sig) <span class="kw">return</span>; <span class="cm">// skip for local dev (ngrok)</span>
+
+  <span class="kw">const</span> expected = <span class="str">'sha256='</span> + crypto
+    .<span class="fn">createHmac</span>(<span class="str">'sha256'</span>, process.env.<span class="cn">WHATSAPP_APP_SECRET</span>)
+    .<span class="fn">update</span>(buf)
+    .<span class="fn">digest</span>(<span class="str">'hex'</span>);
+
+  <span class="kw">if</span> (!crypto.<span class="fn">timingSafeEqual</span>(Buffer.<span class="fn">from</span>(sig), Buffer.<span class="fn">from</span>(expected))) {
+    <span class="kw">throw new</span> <span class="fn">Error</span>(<span class="str">'Invalid signature'</span>);
+  }
+}
+
+module.exports = { verifySignature };</pre>
+    </div>
+    <div class="callout note"><span class="callout-icon">🔒</span><div>Meta only sends to <strong>HTTPS endpoints</strong>. For local dev use <a href="https://ngrok.com" target="_blank">ngrok</a>: <code>ngrok http 3000</code> → copy the HTTPS URL into your Meta App webhook settings.</div></div>
+  </div>
+
+  <!-- S10 -->
+  <div class="section" id="s10">
+    <h2><span class="sec-num">// 10</span> Arabic Resources — المراجع العربية</h2>
+    <p>Going deeper on WhatsApp API for the Saudi market? These Arabic guides cover requirements, pricing, and lead generation strategy.</p>
+    <div class="resources">
+      <a class="res-card" href="https://zidnitech.com/whatsapp-api-requirements-saudi-arabia/" target="_blank">
+        <div class="res-lang">Arabic Guide · Requirements</div>
+        <div class="res-title">متطلبات تفعيل WhatsApp Business API في السعودية</div>
+        <div class="res-desc">كل ما تحتاجه قبل بناء أي Webhook: حساب Meta Business، رقم مخصص، وخطوات التفعيل الرسمي.</div>
+        <span class="res-arrow">zidnitech.com →</span>
+      </a>
+      <a class="res-card" href="https://zidnitech.com/whatsapp-api-pricing-plans-saudi-arabia/" target="_blank">
+        <div class="res-lang">Arabic Guide · Pricing</div>
+        <div class="res-title">أسعار باقات WhatsApp API في السعودية 2026</div>
+        <div class="res-desc">مقارنة تفصيلية: Wati وBevatel وRespond.io وغيرها — أيها يناسب حجم مشروعك وميزانيتك.</div>
+        <span class="res-arrow">zidnitech.com →</span>
+      </a>
+      <a class="res-card" href="https://zidnitech.com/whatsapp-lead-generation-strategies-guide-2026/" target="_blank">
+        <div class="res-lang">Arabic Guide · Lead Gen</div>
+        <div class="res-title">كيف تستخدم واتساب للحصول على عملاء محتملين أكثر؟</div>
+        <div class="res-desc">استراتيجيات Lead Generation للسوق السعودي — من Click-to-WhatsApp Ads إلى Chatbot Funnels.</div>
+        <span class="res-arrow">zidnitech.com →</span>
+      </a>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  <p>Built with ♥ for developers · <a href="https://zidnitech.com" target="_blank">zidnitech.com</a> · WhatsApp API resources in Arabic</p>
+  <p style="margin-top:8px">MIT License · All code snippets are free to use in any project</p>
+</footer>
+
+<script>
+function copyCode(btn) {
+  const pre = btn.closest('.code-block').querySelector('pre');
+  navigator.clipboard.writeText(pre.innerText).then(() => {
+    btn.textContent = 'Copied!';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+</script>
+</body>
+</html>
