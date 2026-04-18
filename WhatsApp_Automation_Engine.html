@@ -1,0 +1,1051 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WhatsApp Automation Engine — Node.js + WooCommerce</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Syne:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --bg2: #0f0f1a;
+    --bg3: #13131f;
+    --surface: #1a1a2e;
+    --surface2: #16213e;
+    --border: #1e2a4a;
+    --border2: #25355a;
+    --green: #00e676;
+    --green2: #69f0ae;
+    --cyan: #00e5ff;
+    --yellow: #ffd740;
+    --red: #ff5252;
+    --purple: #7c4dff;
+    --orange: #ff6d00;
+    --text: #e8eaf6;
+    --text2: #9fa8da;
+    --text3: #5c6bc0;
+    --mono: 'JetBrains Mono', monospace;
+    --sans: 'Syne', sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 14px;
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
+
+  /* Grid background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,230,118,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,230,118,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Header */
+  header {
+    position: relative;
+    padding: 60px 0 40px;
+    border-bottom: 1px solid var(--border);
+    overflow: hidden;
+  }
+
+  header::after {
+    content: '';
+    position: absolute;
+    top: -60px; left: -100px;
+    width: 500px; height: 400px;
+    background: radial-gradient(ellipse, rgba(0,230,118,0.06) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .container { max-width: 960px; margin: 0 auto; padding: 0 28px; position: relative; z-index: 1; }
+
+  .badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(0,230,118,0.08); border: 1px solid rgba(0,230,118,0.2);
+    color: var(--green); padding: 4px 12px; border-radius: 4px;
+    font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+  .badge::before { content: '●'; font-size: 8px; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+  h1 {
+    font-family: var(--sans);
+    font-size: clamp(22px, 4vw, 38px);
+    font-weight: 800;
+    color: #fff;
+    line-height: 1.2;
+    margin-bottom: 16px;
+  }
+
+  h1 span { color: var(--green); }
+
+  .subtitle {
+    color: var(--text2);
+    font-size: 14px;
+    max-width: 640px;
+    margin-bottom: 28px;
+  }
+
+  .tags { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 32px; }
+  .tag {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text2);
+    padding: 3px 10px;
+    border-radius: 3px;
+    font-size: 12px;
+  }
+  .tag.green { border-color: rgba(0,230,118,0.3); color: var(--green2); }
+  .tag.cyan { border-color: rgba(0,229,255,0.3); color: var(--cyan); }
+  .tag.yellow { border-color: rgba(255,215,64,0.3); color: var(--yellow); }
+
+  .meta { display: flex; flex-wrap: wrap; gap: 20px; font-size: 12px; color: var(--text3); }
+  .meta span::before { margin-right: 6px; }
+
+  /* Nav */
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(10,10,15,0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 0;
+  }
+  nav .container { display: flex; align-items: center; gap: 0; overflow-x: auto; }
+  nav a {
+    color: var(--text3);
+    text-decoration: none;
+    padding: 14px 18px;
+    font-size: 12px;
+    white-space: nowrap;
+    transition: color 0.2s;
+    border-bottom: 2px solid transparent;
+  }
+  nav a:hover { color: var(--green); border-bottom-color: var(--green); }
+
+  /* Sections */
+  section { padding: 56px 0; border-bottom: 1px solid var(--border); }
+  section:last-child { border-bottom: none; }
+
+  h2 {
+    font-family: var(--sans);
+    font-size: 22px;
+    font-weight: 800;
+    color: #fff;
+    margin-bottom: 20px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  h2 .num {
+    color: var(--green);
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 400;
+    opacity: 0.7;
+  }
+
+  h3 {
+    font-family: var(--sans);
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--cyan);
+    margin: 28px 0 12px;
+  }
+
+  p { color: var(--text2); margin-bottom: 14px; line-height: 1.8; }
+  p strong { color: var(--text); font-weight: 500; }
+
+  /* Code blocks */
+  .code-block {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    margin: 20px 0;
+    overflow: hidden;
+  }
+
+  .code-header {
+    background: var(--bg3);
+    border-bottom: 1px solid var(--border);
+    padding: 10px 16px;
+    display: flex; align-items: center; justify-content: space-between;
+    font-size: 12px;
+  }
+
+  .code-lang {
+    color: var(--green);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  .code-file { color: var(--text3); font-size: 11px; }
+
+  .copy-btn {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border);
+    color: var(--text3);
+    padding: 3px 10px;
+    border-radius: 3px;
+    font-size: 11px;
+    cursor: pointer;
+    font-family: var(--mono);
+    transition: all 0.2s;
+  }
+  .copy-btn:hover { background: rgba(0,230,118,0.1); border-color: var(--green); color: var(--green); }
+
+  pre {
+    padding: 20px;
+    overflow-x: auto;
+    font-size: 13px;
+    line-height: 1.65;
+    font-family: var(--mono);
+  }
+
+  /* Syntax colors */
+  .k { color: #c792ea; } /* keyword */
+  .s { color: #c3e88d; } /* string */
+  .c { color: #546e7a; font-style: italic; } /* comment */
+  .n { color: #82aaff; } /* function/name */
+  .v { color: var(--cyan); } /* variable */
+  .num-lit { color: var(--orange); } /* number */
+  .p { color: var(--text2); } /* punctuation */
+  .const { color: var(--yellow); }
+
+  /* Callouts */
+  .callout {
+    border-left: 3px solid var(--green);
+    background: rgba(0,230,118,0.04);
+    padding: 14px 18px;
+    border-radius: 0 4px 4px 0;
+    margin: 18px 0;
+    font-size: 13px;
+    color: var(--text2);
+  }
+  .callout.warn { border-color: var(--yellow); background: rgba(255,215,64,0.04); }
+  .callout.info { border-color: var(--cyan); background: rgba(0,229,255,0.04); }
+  .callout strong { color: var(--green); }
+  .callout.warn strong { color: var(--yellow); }
+  .callout.info strong { color: var(--cyan); }
+
+  /* Architecture diagram */
+  .arch {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 28px;
+    margin: 20px 0;
+    font-size: 12px;
+  }
+
+  .flow {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    margin: 10px 0;
+  }
+
+  .flow-box {
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    padding: 6px 14px;
+    border-radius: 4px;
+    color: var(--text);
+    font-size: 12px;
+    white-space: nowrap;
+  }
+  .flow-box.green { border-color: rgba(0,230,118,0.4); color: var(--green2); }
+  .flow-box.cyan { border-color: rgba(0,229,255,0.3); color: var(--cyan); }
+  .flow-box.yellow { border-color: rgba(255,215,64,0.3); color: var(--yellow); }
+  .flow-box.red { border-color: rgba(255,82,82,0.3); color: var(--red); }
+
+  .arrow { color: var(--text3); font-size: 14px; }
+
+  /* Table */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 18px 0;
+    font-size: 13px;
+  }
+  th {
+    background: var(--bg3);
+    color: var(--text2);
+    text-align: left;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border2);
+    font-weight: 500;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text2);
+    vertical-align: top;
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(255,255,255,0.015); }
+  td code, th code {
+    background: var(--surface);
+    padding: 1px 6px;
+    border-radius: 3px;
+    font-size: 12px;
+    color: var(--cyan);
+  }
+
+  /* Endpoint cards */
+  .endpoint {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    margin: 14px 0;
+    overflow: hidden;
+  }
+  .endpoint-header {
+    padding: 12px 16px;
+    display: flex; align-items: center; gap: 12px;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg3);
+  }
+  .method {
+    font-size: 11px; font-weight: 700; padding: 2px 8px;
+    border-radius: 3px; text-transform: uppercase; letter-spacing: 0.05em;
+  }
+  .method.post { background: rgba(0,230,118,0.15); color: var(--green); border: 1px solid rgba(0,230,118,0.3); }
+  .method.get { background: rgba(0,229,255,0.1); color: var(--cyan); border: 1px solid rgba(0,229,255,0.25); }
+  .endpoint-path { color: var(--text); font-size: 13px; }
+  .endpoint-desc { color: var(--text3); font-size: 12px; }
+  .endpoint-body { padding: 14px 16px; font-size: 13px; color: var(--text2); }
+
+  /* Arabic articles section */
+  .article-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 14px;
+    margin-top: 20px;
+  }
+
+  .article-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 20px;
+    text-decoration: none;
+    transition: all 0.2s;
+    display: block;
+    position: relative;
+    overflow: hidden;
+  }
+  .article-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 3px; height: 100%;
+    background: var(--green);
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  .article-card:hover { border-color: var(--border2); transform: translateY(-2px); }
+  .article-card:hover::before { opacity: 1; }
+
+  .card-lang {
+    font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em;
+    color: var(--green); margin-bottom: 8px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .card-lang::before { content: 'AR'; background: rgba(0,230,118,0.1); border: 1px solid rgba(0,230,118,0.2); padding: 1px 6px; border-radius: 2px; }
+
+  .card-title { color: var(--text); font-size: 14px; margin-bottom: 8px; line-height: 1.4; font-family: var(--sans); font-weight: 600; }
+  .card-desc { color: var(--text3); font-size: 12px; line-height: 1.6; }
+  .card-arrow { color: var(--green); margin-top: 14px; font-size: 12px; display: flex; align-items: center; gap: 4px; }
+
+  /* Inline code */
+  code {
+    background: rgba(255,255,255,0.05);
+    padding: 1px 6px;
+    border-radius: 3px;
+    font-size: 13px;
+    color: var(--cyan);
+    font-family: var(--mono);
+  }
+
+  /* TOC list */
+  .toc { list-style: none; display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .toc li a {
+    color: var(--text3); text-decoration: none;
+    font-size: 13px; display: flex; align-items: center; gap: 8px;
+    padding: 6px 10px; border-radius: 4px; transition: all 0.15s;
+  }
+  .toc li a:hover { color: var(--green); background: rgba(0,230,118,0.04); }
+  .toc li a::before { content: '→'; font-size: 12px; color: var(--text3); }
+  .toc li a:hover::before { color: var(--green); }
+
+  /* Install block */
+  .install {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 14px 20px;
+    font-size: 13px;
+    color: var(--green2);
+    display: flex; align-items: center; gap: 10px;
+    margin: 14px 0;
+  }
+  .install::before { content: '$'; color: var(--green); opacity: 0.6; }
+
+  /* Footer */
+  footer {
+    padding: 40px 0;
+    border-top: 1px solid var(--border);
+    text-align: center;
+    color: var(--text3);
+    font-size: 12px;
+  }
+  footer a { color: var(--green); text-decoration: none; }
+
+  @media (max-width: 600px) {
+    .toc { grid-template-columns: 1fr; }
+    .flow { flex-direction: column; align-items: flex-start; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="container">
+    <div class="badge">Production Guide</div>
+    <h1>WhatsApp Automation <span>Engine</span></h1>
+    <p class="subtitle">Building a production-ready event-driven automation system using Node.js, Meta's WhatsApp Cloud API, WooCommerce webhooks, and Redis-based queue processing.</p>
+    <div class="tags">
+      <span class="tag green">Node.js 20+</span>
+      <span class="tag cyan">WhatsApp Cloud API</span>
+      <span class="tag yellow">WooCommerce Webhooks</span>
+      <span class="tag">Redis</span>
+      <span class="tag">Express</span>
+      <span class="tag">Zapier Fallback</span>
+    </div>
+    <div class="meta">
+      <span>⬡ MIT License</span>
+      <span>⚙ Node 20.x</span>
+      <span>📦 8 dependencies</span>
+      <span>✦ Production-ready</span>
+    </div>
+  </div>
+</header>
+
+<!-- NAV -->
+<nav>
+  <div class="container">
+    <a href="#overview">Overview</a>
+    <a href="#architecture">Architecture</a>
+    <a href="#setup">Setup</a>
+    <a href="#webhook">Webhook</a>
+    <a href="#queue">Queue</a>
+    <a href="#templates">Templates</a>
+    <a href="#flows">Flows</a>
+    <a href="#api">API Reference</a>
+    <a href="#resources">Arabic Docs</a>
+  </div>
+</nav>
+
+<!-- OVERVIEW -->
+<section id="overview">
+  <div class="container">
+    <h2><span class="num">01 //</span> Overview</h2>
+    <p>This repository implements a <strong>production-grade WhatsApp automation engine</strong> designed for e-commerce operations. It handles real-time WooCommerce order events, processes them through a Redis message queue, and dispatches contextual WhatsApp messages via the <strong>Meta WhatsApp Cloud API</strong>.</p>
+
+    <p>The system is stateless, horizontally scalable, and built around event-driven architecture — meaning every message dispatched is triggered by a verified business event, not a cron job or manual trigger.</p>
+
+    <div class="callout">
+      <strong>Why this exists:</strong> Most WhatsApp automation tutorials show you how to send a message. This guide shows you how to build the infrastructure that sends the right message at the right time to the right person — reliably, at scale, in production.
+    </div>
+
+    <h3>What this engine handles</h3>
+
+    <table>
+      <thead>
+        <tr><th>Event</th><th>Trigger Source</th><th>Action</th><th>Latency</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Abandoned cart</td><td>WooCommerce webhook</td><td>Recovery sequence (3-step)</td><td>&lt; 2s enqueue, 30min dispatch</td></tr>
+        <tr><td>Order placed (COD)</td><td>WooCommerce webhook</td><td>Confirmation + reply buttons</td><td>&lt; 2s</td></tr>
+        <tr><td>Order shipped</td><td>Shipping API callback</td><td>Tracking update + upsell</td><td>&lt; 3s</td></tr>
+        <tr><td>Delivery confirmed</td><td>Shipping API callback</td><td>Review request sequence</td><td>48hr delay</td></tr>
+        <tr><td>Payment failed</td><td>Payment gateway webhook</td><td>Recovery prompt</td><td>&lt; 5s</td></tr>
+        <tr><td>New lead</td><td>CRM / Form webhook</td><td>Instant follow-up</td><td>&lt; 60s</td></tr>
+      </tbody>
+    </table>
+
+    <ul style="list-style:none; padding: 0; margin-top: 16px;">
+      <h3>Quick Contents</h3>
+      <ul class="toc">
+        <li><a href="#architecture">System Architecture</a></li>
+        <li><a href="#setup">Installation & Config</a></li>
+        <li><a href="#webhook">Webhook Handler</a></li>
+        <li><a href="#queue">Queue Worker</a></li>
+        <li><a href="#templates">Template Manager</a></li>
+        <li><a href="#flows">Automation Flows</a></li>
+        <li><a href="#api">API Reference</a></li>
+        <li><a href="#resources">Arabic Business Docs</a></li>
+      </ul>
+    </ul>
+  </div>
+</section>
+
+<!-- ARCHITECTURE -->
+<section id="architecture">
+  <div class="container">
+    <h2><span class="num">02 //</span> Architecture</h2>
+    <p>The engine is built around three decoupled layers. This separation ensures that webhook processing never blocks message dispatch, and that failed dispatches can be retried without re-processing the original event.</p>
+
+    <div class="arch">
+      <p style="color:var(--text3); font-size:12px; margin-bottom: 16px; text-transform: uppercase; letter-spacing:0.05em;">Event Flow</p>
+
+      <div class="flow">
+        <div class="flow-box cyan">WooCommerce<br>Webhook</div>
+        <span class="arrow">→</span>
+        <div class="flow-box">Express<br>Receiver</div>
+        <span class="arrow">→</span>
+        <div class="flow-box yellow">HMAC<br>Verify</div>
+        <span class="arrow">→</span>
+        <div class="flow-box">Redis<br>Queue</div>
+        <span class="arrow">→</span>
+        <div class="flow-box">Queue<br>Worker</div>
+        <span class="arrow">→</span>
+        <div class="flow-box green">WhatsApp<br>Cloud API</div>
+      </div>
+
+      <div style="margin-top: 20px; border-top: 1px solid var(--border); padding-top: 16px;">
+        <p style="color:var(--text3); font-size:12px; margin-bottom: 12px; text-transform: uppercase; letter-spacing:0.05em;">Retry & Dead Letter</p>
+        <div class="flow">
+          <div class="flow-box red">Dispatch<br>Failure</div>
+          <span class="arrow">→</span>
+          <div class="flow-box yellow">Exponential<br>Backoff</div>
+          <span class="arrow">→</span>
+          <div class="flow-box">Retry<br>(max 3)</div>
+          <span class="arrow">→</span>
+          <div class="flow-box red">Dead Letter<br>Queue</div>
+          <span class="arrow">→</span>
+          <div class="flow-box">Alert +<br>Log</div>
+        </div>
+      </div>
+    </div>
+
+    <h3>Dependency Map</h3>
+    <div class="code-block">
+      <div class="code-header">
+        <span class="code-lang">JSON</span>
+        <span class="code-file">package.json</span>
+        <button class="copy-btn" onclick="copyCode(this)">copy</button>
+      </div>
+      <pre><span class="p">{</span>
+  <span class="s">"name"</span><span class="p">:</span> <span class="s">"whatsapp-automation-engine"</span><span class="p">,</span>
+  <span class="s">"version"</span><span class="p">:</span> <span class="s">"1.0.0"</span><span class="p">,</span>
+  <span class="s">"engines"</span><span class="p">:</span> <span class="p">{</span> <span class="s">"node"</span><span class="p">:</span> <span class="s">">=20.0.0"</span> <span class="p">},</span>
+  <span class="s">"dependencies"</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s">"express"</span><span class="p">:</span>          <span class="s">"^4.18.2"</span><span class="p">,</span>   <span class="c">// HTTP server + webhook receiver</span>
+    <span class="s">"ioredis"</span><span class="p">:</span>          <span class="s">"^5.3.2"</span><span class="p">,</span>    <span class="c">// Redis client (queue + dedup)</span>
+    <span class="s">"bullmq"</span><span class="p">:</span>           <span class="s">"^5.1.1"</span><span class="p">,</span>    <span class="c">// Job queue with retries</span>
+    <span class="s">"axios"</span><span class="p">:</span>            <span class="s">"^1.6.2"</span><span class="p">,</span>    <span class="c">// HTTP client for Meta API</span>
+    <span class="s">"dotenv"</span><span class="p">:</span>           <span class="s">"^16.3.1"</span><span class="p">,</span>   <span class="c">// Environment config</span>
+    <span class="s">"crypto"</span><span class="p">:</span>           <span class="s">"built-in"</span><span class="p">,</span>  <span class="c">// HMAC signature verification</span>
+    <span class="s">"winston"</span><span class="p">:</span>          <span class="s">"^3.11.0"</span><span class="p">,</span>   <span class="c">// Structured logging</span>
+    <span class="s">"node-cron"</span><span class="p">:</span>        <span class="s">"^3.0.3"</span>     <span class="c">// Scheduled jobs (review requests)</span>
+  <span class="p">}</span>
+<span class="p">}</span></pre>
+    </div>
+  </div>
+</section>
+
+<!-- SETUP -->
+<section id="setup">
+  <div class="container">
+    <h2><span class="num">03 //</span> Setup & Configuration</h2>
+
+    <h3>Installation</h3>
+    <div class="install">git clone https://github.com/your-org/whatsapp-automation-engine.git && cd whatsapp-automation-engine</div>
+    <div class="install">npm install</div>
+    <div class="install">cp .env.example .env</div>
+
+    <h3>Environment Variables</h3>
+    <div class="code-block">
+      <div class="code-header">
+        <span class="code-lang">ENV</span>
+        <span class="code-file">.env.example</span>
+        <button class="copy-btn" onclick="copyCode(this)">copy</button>
+      </div>
+      <pre><span class="c"># ─── Meta WhatsApp Cloud API ──────────────────────────────</span>
+<span class="const">WHATSAPP_TOKEN</span>=your_permanent_access_token
+<span class="const">WHATSAPP_PHONE_NUMBER_ID</span>=your_phone_number_id
+<span class="const">WHATSAPP_BUSINESS_ACCOUNT_ID</span>=your_waba_id
+<span class="const">META_APP_SECRET</span>=your_app_secret          <span class="c"># for webhook HMAC verify</span>
+<span class="const">WEBHOOK_VERIFY_TOKEN</span>=your_random_string   <span class="c"># GET verification token</span>
+
+<span class="c"># ─── WooCommerce ──────────────────────────────────────────</span>
+<span class="const">WC_CONSUMER_KEY</span>=ck_xxxxxxxxxxxxxxxxxxxx
+<span class="const">WC_CONSUMER_SECRET</span>=cs_xxxxxxxxxxxxxxxxxxxx
+<span class="const">WC_SITE_URL</span>=https://yourstore.com
+<span class="const">WC_WEBHOOK_SECRET</span>=your_woocommerce_secret  <span class="c"># set in WC dashboard</span>
+
+<span class="c"># ─── Redis ────────────────────────────────────────────────</span>
+<span class="const">REDIS_URL</span>=redis://localhost:6379
+<span class="const">REDIS_PREFIX</span>=wa_engine
+
+<span class="c"># ─── App ──────────────────────────────────────────────────</span>
+<span class="const">PORT</span>=3000
+<span class="const">NODE_ENV</span>=production
+<span class="const">LOG_LEVEL</span>=info</pre>
+    </div>
+
+    <div class="callout warn">
+      <strong>Security:</strong> Never commit your <code>.env</code> file. The <code>META_APP_SECRET</code> is used to verify every incoming webhook signature — without this check, your endpoint will accept forged events.
+    </div>
+  </div>
+</section>
+
+<!-- WEBHOOK -->
+<section id="webhook">
+  <div class="container">
+    <h2><span class="num">04 //</span> Webhook Handler</h2>
+    <p>The webhook handler receives events from WooCommerce and Meta (for inbound WhatsApp messages), verifies their HMAC signatures, normalizes the payload, and enqueues a job. It returns <code>200</code> immediately — all processing happens asynchronously.</p>
+
+    <div class="code-block">
+      <div class="code-header">
+        <span class="code-lang">JS</span>
+        <span class="code-file">src/webhooks/woocommerce.js</span>
+        <button class="copy-btn" onclick="copyCode(this)">copy</button>
+      </div>
+      <pre><span class="k">const</span> <span class="v">crypto</span> = <span class="n">require</span>(<span class="s">'crypto'</span>);
+<span class="k">const</span> <span class="v">{ Queue }</span> = <span class="n">require</span>(<span class="s">'bullmq'</span>);
+<span class="k">const</span> <span class="v">logger</span> = <span class="n">require</span>(<span class="s">'../utils/logger'</span>);
+
+<span class="k">const</span> <span class="v">messageQueue</span> = <span class="k">new</span> <span class="n">Queue</span>(<span class="s">'whatsapp-dispatch'</span>, <span class="p">{</span>
+  <span class="n">connection</span>: <span class="p">{</span> <span class="n">url</span>: <span class="v">process</span>.env.<span class="const">REDIS_URL</span> <span class="p">},</span>
+  <span class="n">defaultJobOptions</span>: <span class="p">{</span>
+    <span class="n">attempts</span>: <span class="num-lit">3</span>,
+    <span class="n">backoff</span>: <span class="p">{</span> <span class="n">type</span>: <span class="s">'exponential'</span>, <span class="n">delay</span>: <span class="num-lit">5000</span> <span class="p">}</span>
+  <span class="p">}</span>
+<span class="p">});</span>
+
+<span class="c">/**
+ * Verify WooCommerce HMAC-SHA256 signature
+ */</span>
+<span class="k">function</span> <span class="n">verifyWooSignature</span>(<span class="v">rawBody</span>, <span class="v">signature</span>) <span class="p">{</span>
+  <span class="k">const</span> <span class="v">expected</span> = <span class="v">crypto</span>
+    .<span class="n">createHmac</span>(<span class="s">'sha256'</span>, <span class="v">process</span>.env.<span class="const">WC_WEBHOOK_SECRET</span>)
+    .<span class="n">update</span>(<span class="v">rawBody</span>)
+    .<span class="n">digest</span>(<span class="s">'base64'</span>);
+  <span class="k">return</span> <span class="v">crypto</span>.<span class="n">timingSafeEqual</span>(
+    <span class="n">Buffer</span>.<span class="n">from</span>(<span class="v">expected</span>),
+    <span class="n">Buffer</span>.<span class="n">from</span>(<span class="v">signature</span>)
+  );
+<span class="p">}</span>
+
+<span class="c">/**
+ * WooCommerce order.created webhook
+ * Maps to: /webhooks/woocommerce/order-created
+ */</span>
+<span class="k">async function</span> <span class="n">handleOrderCreated</span>(<span class="v">req</span>, <span class="v">res</span>) <span class="p">{</span>
+  <span class="k">const</span> <span class="v">rawBody</span> = <span class="v">req</span>.rawBody;
+  <span class="k">const</span> <span class="v">sig</span> = <span class="v">req</span>.headers[<span class="s">'x-wc-webhook-signature'</span>];
+
+  <span class="k">if</span> (!<span class="n">verifyWooSignature</span>(<span class="v">rawBody</span>, <span class="v">sig</span>)) <span class="p">{</span>
+    <span class="v">logger</span>.<span class="n">warn</span>(<span class="s">'Invalid WooCommerce signature'</span>, <span class="p">{</span> <span class="n">ip</span>: <span class="v">req</span>.ip <span class="p">});</span>
+    <span class="k">return</span> <span class="v">res</span>.<span class="n">status</span>(<span class="num-lit">401</span>).<span class="n">end</span>();
+  <span class="p">}</span>
+
+  <span class="k">const</span> <span class="v">order</span> = <span class="v">req</span>.body;
+  <span class="k">const</span> <span class="v">phone</span> = <span class="n">normalizePhone</span>(<span class="v">order</span>.billing.phone);
+
+  <span class="k">if</span> (!<span class="v">phone</span>) <span class="p">{</span>
+    <span class="v">logger</span>.<span class="n">info</span>(<span class="s">'Order has no phone — skipping'</span>, <span class="p">{</span> <span class="n">orderId</span>: <span class="v">order</span>.id <span class="p">});</span>
+    <span class="k">return</span> <span class="v">res</span>.<span class="n">status</span>(<span class="num-lit">200</span>).<span class="n">end</span>();
+  <span class="p">}</span>
+
+  <span class="c">// Determine automation flow based on payment method</span>
+  <span class="k">const</span> <span class="v">flow</span> = <span class="v">order</span>.payment_method === <span class="s">'cod'</span>
+    ? <span class="s">'cod_confirmation'</span>
+    : <span class="s">'order_confirmation'</span>;
+
+  <span class="k">await</span> <span class="v">messageQueue</span>.<span class="n">add</span>(<span class="v">flow</span>, <span class="p">{</span>
+    <span class="n">to</span>: <span class="v">phone</span>,
+    <span class="n">orderId</span>: <span class="v">order</span>.id,
+    <span class="n">orderNumber</span>: <span class="v">order</span>.number,
+    <span class="n">total</span>: <span class="v">order</span>.total,
+    <span class="n">currency</span>: <span class="v">order</span>.currency,
+    <span class="n">items</span>: <span class="v">order</span>.line_items.<span class="n">map</span>(<span class="v">i</span> => <span class="v">i</span>.name),
+    <span class="n">customerName</span>: <span class="v">order</span>.billing.first_name
+  <span class="p">},</span> <span class="p">{</span>
+    <span class="n">jobId</span>: <span class="s">`order-<span class="v">${order.id}</span>`</span>,  <span class="c">// dedup key</span>
+    <span class="n">delay</span>: <span class="num-lit">0</span>
+  <span class="p">});</span>
+
+  <span class="v">logger</span>.<span class="n">info</span>(<span class="s">'Order enqueued'</span>, <span class="p">{</span> <span class="n">orderId</span>: <span class="v">order</span>.id, <span class="v">flow</span> <span class="p">});</span>
+  <span class="v">res</span>.<span class="n">status</span>(<span class="num-lit">200</span>).<span class="n">end</span>();
+<span class="p">}</span>
+
+<span class="c">// E.164 normalization — Saudi numbers example</span>
+<span class="k">function</span> <span class="n">normalizePhone</span>(<span class="v">raw</span>) <span class="p">{</span>
+  <span class="k">if</span> (!<span class="v">raw</span>) <span class="k">return</span> <span class="k">null</span>;
+  <span class="k">const</span> <span class="v">digits</span> = <span class="v">raw</span>.<span class="n">replace</span>(<span class="s">/\D/g</span>, <span class="s">''</span>);
+  <span class="k">if</span> (<span class="v">digits</span>.startsWith(<span class="s">'966'</span>))  <span class="k">return</span> <span class="v">digits</span>;
+  <span class="k">if</span> (<span class="v">digits</span>.startsWith(<span class="s">'05'</span>))   <span class="k">return</span> <span class="s">'966'</span> + <span class="v">digits</span>.<span class="n">slice</span>(<span class="num-lit">1</span>);
+  <span class="k">if</span> (<span class="v">digits</span>.startsWith(<span class="s">'5'</span>))    <span class="k">return</span> <span class="s">'966'</span> + <span class="v">digits</span>;
+  <span class="k">return</span> <span class="k">null</span>;
+<span class="p">}</span>
+
+<span class="n">module</span>.exports = <span class="p">{</span> <span class="v">handleOrderCreated</span> <span class="p">};</span></pre>
+    </div>
+  </div>
+</section>
+
+<!-- QUEUE WORKER -->
+<section id="queue">
+  <div class="container">
+    <h2><span class="num">05 //</span> Queue Worker</h2>
+    <p>The BullMQ worker processes jobs from the Redis queue. Each job type maps to a specific message flow. Workers are stateless — you can run multiple instances behind a load balancer without coordination.</p>
+
+    <div class="code-block">
+      <div class="code-header">
+        <span class="code-lang">JS</span>
+        <span class="code-file">src/workers/dispatch.worker.js</span>
+        <button class="copy-btn" onclick="copyCode(this)">copy</button>
+      </div>
+      <pre><span class="k">const</span> <span class="v">{ Worker }</span> = <span class="n">require</span>(<span class="s">'bullmq'</span>);
+<span class="k">const</span> <span class="v">whatsapp</span> = <span class="n">require</span>(<span class="s">'../services/whatsapp.service'</span>);
+<span class="k">const</span> <span class="v">flows</span> = <span class="n">require</span>(<span class="s">'../flows'</span>);
+<span class="k">const</span> <span class="v">logger</span> = <span class="n">require</span>(<span class="s">'../utils/logger'</span>);
+
+<span class="k">const</span> <span class="v">worker</span> = <span class="k">new</span> <span class="n">Worker</span>(<span class="s">'whatsapp-dispatch'</span>, <span class="k">async</span> (<span class="v">job</span>) => <span class="p">{</span>
+
+  <span class="v">logger</span>.<span class="n">info</span>(<span class="s">`Processing job: <span class="v">${job.name}</span>`</span>, <span class="p">{</span> <span class="n">id</span>: <span class="v">job</span>.id <span class="p">});</span>
+
+  <span class="k">switch</span> (<span class="v">job</span>.name) <span class="p">{</span>
+    <span class="k">case</span> <span class="s">'order_confirmation'</span><span class="p">:</span>
+      <span class="k">return</span> <span class="k">await</span> <span class="v">flows</span>.<span class="n">orderConfirmation</span>(<span class="v">job</span>.data);
+
+    <span class="k">case</span> <span class="s">'cod_confirmation'</span><span class="p">:</span>
+      <span class="k">return</span> <span class="k">await</span> <span class="v">flows</span>.<span class="n">codConfirmation</span>(<span class="v">job</span>.data);
+
+    <span class="k">case</span> <span class="s">'cart_recovery_1'</span><span class="p">:</span>
+      <span class="k">return</span> <span class="k">await</span> <span class="v">flows</span>.<span class="n">cartRecovery</span>(<span class="v">job</span>.data, <span class="p">{</span> <span class="n">step</span>: <span class="num-lit">1</span> <span class="p">});</span>
+
+    <span class="k">case</span> <span class="s">'cart_recovery_2'</span><span class="p">:</span>
+      <span class="k">return</span> <span class="k">await</span> <span class="v">flows</span>.<span class="n">cartRecovery</span>(<span class="v">job</span>.data, <span class="p">{</span> <span class="n">step</span>: <span class="num-lit">2</span> <span class="p">});</span>
+
+    <span class="k">case</span> <span class="s">'review_request'</span><span class="p">:</span>
+      <span class="k">return</span> <span class="k">await</span> <span class="v">flows</span>.<span class="n">reviewRequest</span>(<span class="v">job</span>.data);
+
+    <span class="k">case</span> <span class="s">'shipment_update'</span><span class="p">:</span>
+      <span class="k">return</span> <span class="k">await</span> <span class="v">flows</span>.<span class="n">shipmentUpdate</span>(<span class="v">job</span>.data);
+
+    <span class="k">default</span><span class="p">:</span>
+      <span class="v">logger</span>.<span class="n">warn</span>(<span class="s">`Unknown job type: <span class="v">${job.name}</span>`</span>);
+  <span class="p">}</span>
+
+<span class="p">},</span> <span class="p">{</span>
+  <span class="n">connection</span>: <span class="p">{</span> <span class="n">url</span>: <span class="v">process</span>.env.<span class="const">REDIS_URL</span> <span class="p">},</span>
+  <span class="n">concurrency</span>: <span class="num-lit">10</span>   <span class="c">// process 10 jobs concurrently per worker</span>
+<span class="p">});</span>
+
+<span class="v">worker</span>.<span class="n">on</span>(<span class="s">'failed'</span>, (<span class="v">job</span>, <span class="v">err</span>) => <span class="p">{</span>
+  <span class="v">logger</span>.<span class="n">error</span>(<span class="s">'Job failed'</span>, <span class="p">{</span>
+    <span class="n">job</span>: <span class="v">job</span>.name, <span class="n">attempt</span>: <span class="v">job</span>.attemptsMade,
+    <span class="n">error</span>: <span class="v">err</span>.message
+  <span class="p">});</span>
+<span class="p">});</span></pre>
+    </div>
+  </div>
+</section>
+
+<!-- TEMPLATES -->
+<section id="templates">
+  <div class="container">
+    <h2><span class="num">06 //</span> Template Manager</h2>
+    <p>All outbound messages use <strong>Meta-approved templates</strong>. The template service handles parameter injection, language selection, and constructs the correct Meta API payload structure.</p>
+
+    <div class="callout info">
+      <strong>Meta requirement:</strong> Any message initiated by your business (outside an active 24-hour customer session) must use a pre-approved template. Templates are submitted via the Meta Business Manager and typically approved within minutes to a few hours.
+    </div>
+
+    <div class="code-block">
+      <div class="code-header">
+        <span class="code-lang">JS</span>
+        <span class="code-file">src/services/whatsapp.service.js</span>
+        <button class="copy-btn" onclick="copyCode(this)">copy</button>
+      </div>
+      <pre><span class="k">const</span> <span class="v">axios</span> = <span class="n">require</span>(<span class="s">'axios'</span>);
+
+<span class="k">const</span> <span class="v">BASE_URL</span> = <span class="s">`https://graph.facebook.com/v19.0/<span class="v">${process.env.WHATSAPP_PHONE_NUMBER_ID}</span>/messages`</span>;
+
+<span class="c">/**
+ * Send a pre-approved template message
+ * @param {string} to  - E.164 phone number (e.g. "966501234567")
+ * @param {string} templateName - Approved template name
+ * @param {string} lang  - Language code ("ar" | "en_US")
+ * @param {Array}  components - Header/body/button parameter arrays
+ */</span>
+<span class="k">async function</span> <span class="n">sendTemplate</span>(<span class="v">to</span>, <span class="v">templateName</span>, <span class="v">lang</span>, <span class="v">components</span> = []) <span class="p">{</span>
+  <span class="k">const</span> <span class="v">payload</span> = <span class="p">{</span>
+    <span class="n">messaging_product</span>: <span class="s">'whatsapp'</span>,
+    <span class="n">to</span><span class="p">:</span> <span class="v">to</span>,
+    <span class="n">type</span><span class="p">:</span> <span class="s">'template'</span>,
+    <span class="n">template</span><span class="p">:</span> <span class="p">{</span>
+      <span class="n">name</span><span class="p">:</span> <span class="v">templateName</span>,
+      <span class="n">language</span><span class="p">:</span> <span class="p">{</span> <span class="n">code</span><span class="p">:</span> <span class="v">lang</span> <span class="p">},</span>
+      <span class="n">components</span><span class="p">:</span> <span class="v">components</span>
+    <span class="p">}</span>
+  <span class="p">};</span>
+
+  <span class="k">const</span> <span class="v">response</span> = <span class="k">await</span> <span class="v">axios</span>.<span class="n">post</span>(<span class="v">BASE_URL</span>, <span class="v">payload</span>, <span class="p">{</span>
+    <span class="n">headers</span>: <span class="p">{</span>
+      <span class="s">'Authorization'</span>: <span class="s">`Bearer <span class="v">${process.env.WHATSAPP_TOKEN}</span>`</span>,
+      <span class="s">'Content-Type'</span>: <span class="s">'application/json'</span>
+    <span class="p">}</span>
+  <span class="p">});</span>
+
+  <span class="k">return</span> <span class="v">response</span>.data;
+<span class="p">}</span>
+
+<span class="c">/**
+ * Send interactive message with reply buttons
+ */</span>
+<span class="k">async function</span> <span class="n">sendButtons</span>(<span class="v">to</span>, <span class="v">body</span>, <span class="v">buttons</span>) <span class="p">{</span>
+  <span class="k">const</span> <span class="v">payload</span> = <span class="p">{</span>
+    <span class="n">messaging_product</span>: <span class="s">'whatsapp'</span>,
+    <span class="n">to</span><span class="p">:</span> <span class="v">to</span>,
+    <span class="n">type</span><span class="p">:</span> <span class="s">'interactive'</span>,
+    <span class="n">interactive</span><span class="p">:</span> <span class="p">{</span>
+      <span class="n">type</span><span class="p">:</span> <span class="s">'button'</span>,
+      <span class="n">body</span><span class="p">:</span> <span class="p">{</span> <span class="n">text</span><span class="p">:</span> <span class="v">body</span> <span class="p">},</span>
+      <span class="n">action</span><span class="p">:</span> <span class="p">{</span>
+        <span class="n">buttons</span><span class="p">:</span> <span class="v">buttons</span>.<span class="n">map</span>((<span class="v">b</span>, <span class="v">i</span>) => (<span class="p">{</span>
+          <span class="n">type</span><span class="p">:</span> <span class="s">'reply'</span>,
+          <span class="n">reply</span><span class="p">:</span> <span class="p">{</span> <span class="n">id</span><span class="p">:</span> <span class="s">`btn_<span class="v">${i}</span>`</span>, <span class="n">title</span><span class="p">:</span> <span class="v">b</span> <span class="p">}</span>
+        <span class="p">}))</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+  <span class="p">};</span>
+  <span class="k">return</span> <span class="v">axios</span>.<span class="n">post</span>(<span class="v">BASE_URL</span>, <span class="v">payload</span>, <span class="p">{</span>
+    <span class="n">headers</span>: <span class="p">{</span> <span class="s">'Authorization'</span>: <span class="s">`Bearer <span class="v">${process.env.WHATSAPP_TOKEN}</span>`</span> <span class="p">}</span>
+  <span class="p">});</span>
+<span class="p">}</span>
+
+<span class="n">module</span>.exports = <span class="p">{</span> <span class="v">sendTemplate</span>, <span class="v">sendButtons</span> <span class="p">};</span></pre>
+    </div>
+  </div>
+</section>
+
+<!-- FLOWS -->
+<section id="flows">
+  <div class="container">
+    <h2><span class="num">07 //</span> Automation Flows</h2>
+    <p>Each flow is a pure function that receives job data and calls the WhatsApp service. Flows with multiple steps use BullMQ's <code>delay</code> option to schedule follow-up messages.</p>
+
+    <h3>Cart Recovery — 3-Step Sequence</h3>
+    <div class="code-block">
+      <div class="code-header">
+        <span class="code-lang">JS</span>
+        <span class="code-file">src/flows/cartRecovery.js</span>
+        <button class="copy-btn" onclick="copyCode(this)">copy</button>
+      </div>
+      <pre><span class="k">const</span> <span class="v">{ Queue }</span> = <span class="n">require</span>(<span class="s">'bullmq'</span>);
+<span class="k">const</span> <span class="v">wa</span> = <span class="n">require</span>(<span class="s">'../services/whatsapp.service'</span>);
+
+<span class="k">const</span> <span class="v">queue</span> = <span class="k">new</span> <span class="n">Queue</span>(<span class="s">'whatsapp-dispatch'</span>, <span class="p">{</span>
+  <span class="n">connection</span>: <span class="p">{</span> <span class="n">url</span>: <span class="v">process</span>.env.<span class="const">REDIS_URL</span> <span class="p">}</span>
+<span class="p">});</span>
+
+<span class="k">const</span> <span class="v">DELAYS</span> = <span class="p">{</span>
+  <span class="n">step1</span>: <span class="num-lit">30</span> * <span class="num-lit">60</span> * <span class="num-lit">1000</span>,   <span class="c">// 30 minutes</span>
+  <span class="n">step2</span>: <span class="num-lit">24</span> * <span class="num-lit">60</span> * <span class="num-lit">60</span> * <span class="num-lit">1000</span> <span class="c">// 24 hours</span>
+<span class="p">};</span>
+
+<span class="k">async function</span> <span class="n">cartRecovery</span>(<span class="v">data</span>, <span class="p">{</span> <span class="v">step</span> <span class="p">})</span> <span class="p">{</span>
+  <span class="k">const</span> <span class="v">{ to, cartUrl, productName, customerName }</span> = <span class="v">data</span>;
+
+  <span class="k">if</span> (<span class="v">step</span> === <span class="num-lit">1</span>) <span class="p">{</span>
+    <span class="c">// Step 1: Soft reminder with discount</span>
+    <span class="k">await</span> <span class="v">wa</span>.<span class="n">sendTemplate</span>(<span class="v">to</span>, <span class="s">'cart_recovery_v1'</span>, <span class="s">'ar'</span>, [<span class="p">{</span>
+      <span class="n">type</span>: <span class="s">'body'</span>,
+      <span class="n">parameters</span>: [
+        <span class="p">{</span> <span class="n">type</span>: <span class="s">'text'</span>, <span class="n">text</span>: <span class="v">customerName</span> <span class="p">},</span>
+        <span class="p">{</span> <span class="n">type</span>: <span class="s">'text'</span>, <span class="n">text</span>: <span class="v">productName</span> <span class="p">},</span>
+        <span class="p">{</span> <span class="n">type</span>: <span class="s">'text'</span>, <span class="n">text</span>: <span class="s">'COMPLETE10'</span> <span class="p">}</span>
+      ]
+    <span class="p">},</span> <span class="p">{</span>
+      <span class="n">type</span>: <span class="s">'button'</span>,
+      <span class="n">sub_type</span>: <span class="s">'url'</span>,
+      <span class="n">index</span>: <span class="num-lit">0</span>,
+      <span class="n">parameters</span>: [<span class="p">{</span> <span class="n">type</span>: <span class="s">'text'</span>, <span class="n">text</span>: <span class="v">cartUrl</span> <span class="p">}]</span>
+    <span class="p">}]);</span>
+
+    <span class="c">// Schedule step 2 if no action taken</span>
+    <span class="k">await</span> <span class="v">queue</span>.<span class="n">add</span>(<span class="s">'cart_recovery_2'</span>, <span class="v">data</span>, <span class="p">{</span>
+      <span class="n">jobId</span>: <span class="s">`cart-step2-<span class="v">${data.cartId}</span>`</span>,
+      <span class="n">delay</span>: <span class="v">DELAYS</span>.step2
+    <span class="p">});</span>
+  <span class="p">}</span>
+
+  <span class="k">if</span> (<span class="v">step</span> === <span class="num-lit">2</span>) <span class="p">{</span>
+    <span class="c">// Step 2: Scarcity angle / open question</span>
+    <span class="k">await</span> <span class="v">wa</span>.<span class="n">sendTemplate</span>(<span class="v">to</span>, <span class="s">'cart_recovery_v2'</span>, <span class="s">'ar'</span>, [<span class="p">{</span>
+      <span class="n">type</span>: <span class="s">'body'</span>,
+      <span class="n">parameters</span>: [<span class="p">{</span> <span class="n">type</span>: <span class="s">'text'</span>, <span class="n">text</span>: <span class="v">customerName</span> <span class="p">}]</span>
+    <span class="p">}]);</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="n">module</span>.exports = <span class="p">{</span> <span class="v">cartRecovery</span> <span class="p">};</span></pre>
+    </div>
+
+    <div class="callout">
+      <strong>Deduplication:</strong> The <code>jobId</code> on each queued job ensures that if a webhook fires twice (WooCommerce sometimes retries), only one message sequence is dispatched per cart. BullMQ will silently drop the duplicate if the jobId already exists.
+    </div>
+  </div>
+</section>
+
+<!-- API REFERENCE -->
+<section id="api">
+  <div class="container">
+    <h2><span class="num">08 //</span> API Reference</h2>
+    <p>The engine exposes a small internal REST API for manual triggers, health checks, and integration with external tools like Zapier.</p>
+
+    <div class="endpoint">
+      <div class="endpoint-header">
+        <span class="method post">POST</span>
+        <span class="endpoint-path">/webhooks/woocommerce/order-created</span>
+      </div>
+      <div class="endpoint-body">
+        Receives WooCommerce <code>order.created</code> webhook. Verifies HMAC-SHA256 signature, normalizes phone, routes to <code>order_confirmation</code> or <code>cod_confirmation</code> flow.
+        <br><br>
+        <strong>Headers:</strong> <code>X-WC-Webhook-Signature</code> (base64 HMAC)
+      </div>
+    </div>
+
+    <div class="endpoint">
+      <div class="endpoint-header">
+        <span class="method post">POST</span>
+        <span class="endpoint-path">/webhooks/cart-abandoned</span>
+      </div>
+      <div class="endpoint-body">
+        Receives abandoned cart event from WooCommerce Abandoned Cart plugin or custom trigger. Enqueues <code>cart_recovery_1</code> with 30-minute delay.
+        <br><br>
+        <strong>Body:</strong> <code>{ cartId, customerPhone, customerName, items, cartUrl }</code>
+      </div>
+    </div>
+
+    <div class="endpoint">
+      <div class="endpoint-header">
+        <span class="method post">POST</span>
+        <span class="endpoint-path">/trigger/:flowName</span>
+      </div>
+      <div class="endpoint-body">
+        Manual trigger endpoint — useful for Zapier integration or testing. Enqueues any supported flow by name.
+        <br><br>
+        <strong>Body:</strong> Flow-specific data object. Returns <code>{ jobId, queued: true }</code>.
+      </div>
+    </div>
+
+    <div class="endpoint">
+      <div class="endpoint-header">
+        <span class="method get">GET</span>
+        <span class="endpoint-path">/health</span>
+      </div>
+      <div class="endpoint-body">
+        Health check. Returns Redis connection status, queue depth, and worker count. Use for load balancer probes.
+      </div>
+    </div>
+
+    <div class="endpoint">
+      <div class="endpoint-header">
+        <span class="method get">GET</span>
+        <span class="endpoint-path">/webhooks/meta</span>
+      </div>
+      <div class="endpoint-body">
+        Meta webhook verification endpoint (GET). Returns <code>hub.challenge</code> if <code>hub.verify_token</code> matches <code>WEBHOOK_VERIFY_TOKEN</code>.
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ARABIC RESOURCES -->
+<section id="resources">
+  <div class="container">
+    <h2><span class="num">09 //</span> Arabic Business Documentation</h2>
+    <p>This engine is production-tested in the <strong>Saudi Arabian e-commerce market</strong>. The following Arabic-language resources cover the business logic, provider selection, and ROI analysis behind each automation flow — useful context if you're deploying for Arabic-speaking markets or need to understand the commercial reasoning behind the code.</p>
+
+    <div class="callout info">
+      <strong>For developers:</strong> The code is language-agnostic. The Arabic docs cover <em>what to build and why</em> — provider comparisons, message templates in Arabic, COD-specific flows, and ROI benchmarks from live Saudi deployments.
+    </div>
+
+    <div class="article-cards">
+
+      <a href="https://zidnitech.com/whatsapp-zapier-automation-no-code/" target="_blank" class="article-card">
+        <div class="card-lang">زيدني تك · Business Guide</div>
+        <div class="card-title">WhatsApp + Zapier: أتمتة واتساب بدون كود</div>
+        <div class="card-desc">The no-code counterpart to this repo. Covers Zapier-to-Wati integration, 8 automation use cases with ROI data, and comparison of Zapier vs Make vs n8n for the Saudi market.</div>
+        <div class="card-arrow">Read Arabic guide →</div>
+      </a>
+
+      <a href="https://zidnitech.com/best-whatsapp-api-providers-saudi-arabia-2026/" target="_blank" class="article-card">
+        <div class="card-lang">زيدني تك · Provider Review</div>
+        <div class="card-title">أفضل مزودي WhatsApp API في السعودية 2026</div>
+        <div class="card-desc">Detailed comparison of Wati, Respond.io, Bevatel, Interakt, and Tqniat — with verified pricing, feature matrices, and recommendation by business size. Choose your BSP before deploying this engine.</div>
+        <div class="card-arrow">Read Arabic guide →</div>
+      </a>
+
+      <a href="https://zidnitech.com/whatsapp-bot-business-benefits/" target="_blank" class="article-card">
+        <div class="card-lang">زيدني تك · ROI Analysis</div>
+        <div class="card-title">كيف يرفع بوت واتساب مبيعات الشركات؟ (دليل عملي)</div>
+        <div class="card-desc">Business case and ROI analysis for WhatsApp chatbot deployment in Saudi SMBs. Covers cart recovery benchmarks, COD confirmation rates, and upsell conversion data from live implementations — the commercial foundation for what this codebase automates.</div>
+        <div class="card-arrow">Read Arabic guide →</div>
+      </a>
+
+    </div>
+
+    <div style="margin-top: 28px; padding: 18px; background: var(--bg2); border: 1px solid var(--border); border-radius: 6px; font-size: 13px; color: var(--text2);">
+      <strong style="color: var(--text);">Note for developers building for Arabic markets:</strong>
+      Phone normalization in this repo defaults to Saudi E.164 format (<code>966XXXXXXXXX</code>). For other Gulf markets, update the <code>normalizePhone()</code> function in <code>src/webhooks/woocommerce.js</code>. WhatsApp template language codes for Arabic are <code>"ar"</code> — verify your templates are submitted with this code in Meta Business Manager.
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <p>MIT License · <a href="https://zidnitech.com" target="_blank">zidnitech.com</a> · Built for production use in Saudi e-commerce</p>
+    <p style="margin-top: 8px; font-size: 11px;">Node.js 20+ · WhatsApp Cloud API v19 · BullMQ + Redis · WooCommerce Webhooks</p>
+  </div>
+</footer>
+
+<script>
+function copyCode(btn) {
+  const pre = btn.closest('.code-block').querySelector('pre');
+  const text = pre.innerText;
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = 'copied!';
+    btn.style.color = 'var(--green)';
+    setTimeout(() => { btn.textContent = 'copy'; btn.style.color = ''; }, 2000);
+  });
+}
+</script>
+</body>
+</html>
