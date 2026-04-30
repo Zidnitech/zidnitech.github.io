@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WhatsApp Upsell Engine — System Design</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d1117;
+    --bg2: #161b22;
+    --bg3: #21262d;
+    --border: #30363d;
+    --border2: #3d444d;
+    --text: #e6edf3;
+    --text2: #8b949e;
+    --text3: #6e7681;
+    --green: #3fb950;
+    --green2: #56d364;
+    --blue: #58a6ff;
+    --yellow: #d29922;
+    --yellow2: #e3b341;
+    --red: #f85149;
+    --purple: #bc8cff;
+    --orange: #ffa657;
+    --mono: 'IBM Plex Mono', monospace;
+    --sans: 'IBM Plex Sans', sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 15px;
+    line-height: 1.7;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 32px 24px 80px;
+  }
+
+  /* Header */
+  .repo-header {
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 24px;
+    margin-bottom: 32px;
+  }
+
+  .repo-path {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--text2);
+    margin-bottom: 12px;
+  }
+
+  .repo-path span { color: var(--blue); }
+
+  .repo-title {
+    font-family: var(--mono);
+    font-size: clamp(20px, 3vw, 28px);
+    font-weight: 600;
+    color: var(--text);
+    line-height: 1.3;
+    margin-bottom: 12px;
+  }
+
+  .repo-desc {
+    color: var(--text2);
+    font-size: 14px;
+    margin-bottom: 16px;
+  }
+
+  .badges { display: flex; flex-wrap: wrap; gap: 8px; }
+
+  .badge {
+    font-family: var(--mono);
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    border: 1px solid;
+  }
+
+  .badge.green { color: var(--green2); border-color: rgba(63,185,80,0.4); background: rgba(63,185,80,0.08); }
+  .badge.blue { color: var(--blue); border-color: rgba(88,166,255,0.4); background: rgba(88,166,255,0.08); }
+  .badge.yellow { color: var(--yellow2); border-color: rgba(210,153,34,0.4); background: rgba(210,153,34,0.08); }
+  .badge.purple { color: var(--purple); border-color: rgba(188,140,255,0.4); background: rgba(188,140,255,0.08); }
+
+  /* TOC */
+  .toc {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 20px 24px;
+    margin-bottom: 40px;
+  }
+
+  .toc-title {
+    font-family: var(--mono);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text3);
+    margin-bottom: 12px;
+  }
+
+  .toc ol { padding-left: 18px; }
+  .toc li { margin: 4px 0; }
+  .toc a { color: var(--blue); text-decoration: none; font-size: 14px; }
+  .toc a:hover { text-decoration: underline; }
+
+  /* Sections */
+  section { margin-bottom: 52px; }
+
+  h2 {
+    font-family: var(--mono);
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  h2 .section-num {
+    color: var(--text3);
+    font-size: 13px;
+    font-weight: 400;
+  }
+
+  h3 {
+    font-family: var(--mono);
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--orange);
+    margin: 24px 0 10px;
+  }
+
+  p { color: var(--text2); margin-bottom: 14px; line-height: 1.8; }
+  p strong { color: var(--text); font-weight: 500; }
+
+  a { color: var(--blue); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  /* Code blocks */
+  .code-block {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    margin: 16px 0;
+    overflow: hidden;
+  }
+
+  .code-header {
+    background: var(--bg3);
+    border-bottom: 1px solid var(--border);
+    padding: 8px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text3);
+  }
+
+  .code-header .lang { color: var(--green); text-transform: uppercase; letter-spacing: 0.05em; }
+
+  .copy-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text3);
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-family: var(--mono);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .copy-btn:hover { color: var(--text); border-color: var(--text3); }
+
+  pre {
+    padding: 16px;
+    overflow-x: auto;
+    font-family: var(--mono);
+    font-size: 13px;
+    line-height: 1.6;
+  }
+
+  .k { color: var(--purple); }
+  .s { color: var(--green2); }
+  .c { color: var(--text3); font-style: italic; }
+  .op { color: var(--yellow2); }
+  .v { color: var(--blue); }
+  .n { color: var(--orange); }
+  .arrow { color: var(--text); font-weight: 600; }
+
+  /* Flow diagram */
+  .flow {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    margin: 12px 0;
+    font-family: var(--mono);
+    font-size: 12px;
+  }
+
+  .flow-node {
+    padding: 6px 14px;
+    border-radius: 4px;
+    border: 1px solid;
+    white-space: nowrap;
+  }
+
+  .flow-node.trigger { color: var(--green2); border-color: rgba(86,211,100,0.4); background: rgba(86,211,100,0.08); }
+  .flow-node.delay { color: var(--yellow2); border-color: rgba(227,179,65,0.4); background: rgba(227,179,65,0.08); }
+  .flow-node.condition { color: var(--purple); border-color: rgba(188,140,255,0.4); background: rgba(188,140,255,0.08); }
+  .flow-node.action { color: var(--blue); border-color: rgba(88,166,255,0.4); background: rgba(88,166,255,0.08); }
+  .flow-node.branch { color: var(--orange); border-color: rgba(255,166,87,0.4); background: rgba(255,166,87,0.08); }
+
+  .flow-arrow { color: var(--text3); font-size: 14px; }
+
+  /* Tables */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0;
+    font-size: 13px;
+  }
+
+  th {
+    background: var(--bg3);
+    color: var(--text2);
+    text-align: left;
+    padding: 8px 14px;
+    border-bottom: 1px solid var(--border2);
+    font-family: var(--mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 500;
+  }
+
+  td {
+    padding: 9px 14px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text2);
+    vertical-align: top;
+  }
+
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(255,255,255,0.015); }
+  td code { color: var(--green2); font-family: var(--mono); font-size: 12px; background: rgba(86,211,100,0.08); padding: 1px 6px; border-radius: 3px; }
+
+  /* Lists */
+  ul, ol { padding-left: 20px; margin: 10px 0 14px; }
+  li { color: var(--text2); margin: 5px 0; line-height: 1.7; }
+  li strong { color: var(--text); }
+
+  /* Callouts */
+  .callout {
+    border-left: 3px solid;
+    padding: 12px 16px;
+    border-radius: 0 4px 4px 0;
+    margin: 16px 0;
+    font-size: 14px;
+  }
+  .callout.note { border-color: var(--blue); background: rgba(88,166,255,0.06); color: var(--text2); }
+  .callout.warn { border-color: var(--yellow2); background: rgba(227,179,65,0.06); color: var(--text2); }
+  .callout.tip { border-color: var(--green); background: rgba(63,185,80,0.06); color: var(--text2); }
+  .callout strong { color: var(--text); }
+
+  /* Inline code */
+  code {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--orange);
+    background: rgba(255,166,87,0.1);
+    padding: 1px 6px;
+    border-radius: 3px;
+  }
+
+  /* Architecture diagram */
+  .arch-box {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 20px;
+    margin: 16px 0;
+  }
+
+  .arch-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 8px 0;
+    align-items: center;
+  }
+
+  .arch-label {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text3);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    min-width: 90px;
+  }
+
+  /* Footer */
+  .footer {
+    margin-top: 60px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--text3);
+  }
+
+  .footer a { color: var(--blue); }
+
+  @media (max-width: 600px) {
+    body { padding: 20px 16px 60px; }
+    .flow { flex-direction: column; align-items: flex-start; }
+  }
+</style>
+</head>
+<body>
+
+<div class="repo-header">
+  <div class="repo-path"><span>zidnitech</span> / whatsapp-upsell-engine</div>
+  <div class="repo-title">WhatsApp Upsell Engine<br>No-Code System Design + Automation Flows</div>
+  <div class="repo-desc">A structured, implementation-ready guide to building a WhatsApp upsell system that converts existing customers into recurring revenue — without annoying them.</div>
+  <div class="badges">
+    <span class="badge green">No-Code Friendly</span>
+    <span class="badge blue">WhatsApp API</span>
+    <span class="badge yellow">Revenue Operations</span>
+    <span class="badge purple">Automation Flows</span>
+  </div>
+</div>
+
+<div class="toc">
+  <div class="toc-title">Table of Contents</div>
+  <ol>
+    <li><a href="#overview">Overview — What Is a WhatsApp Upsell Engine?</a></li>
+    <li><a href="#architecture">System Architecture</a></li>
+    <li><a href="#flow-logic">Flow Logic: Triggers → Conditions → Actions</a></li>
+    <li><a href="#use-cases">Real Use Cases</a></li>
+    <li><a href="#example-flows">Example Flows</a></li>
+    <li><a href="#automation-scenarios">Automation Scenarios</a></li>
+    <li><a href="#tools">Tools Layer</a></li>
+    <li><a href="#mistakes">Key Mistakes</a></li>
+    <li><a href="#blueprint">Final System Blueprint</a></li>
+  </ol>
+</div>
+
+<!-- OVERVIEW -->
+<section id="overview">
+  <h2><span class="section-num">01 //</span> Overview — What Is a WhatsApp Upsell Engine?</h2>
+
+  <p>An upsell engine is a system that identifies the right moment to present a higher-value offer to an existing customer — and delivers it automatically, in context, without human intervention.</p>
+
+  <p>WhatsApp is the most effective channel for this in the Middle East and Saudi Arabia because of one number: <strong>98% open rate</strong>. Not a reach problem. A timing and relevance problem.</p>
+
+  <p>Most businesses leave upsell revenue on the table not because they don't have good offers — but because they have no system to deliver those offers at the right moment. A customer who just received their order confirmation is in peak trust. That's when you show them the complementary item. Not three weeks later. Not in a generic newsletter.</p>
+
+  <p>This guide gives you the architecture, the logic, and the flows to build this. For the strategic business case behind these patterns, see the full breakdown of <a href="https://zidnitech.com/whatsapp-upsell-strategies-guide/">WhatsApp upsell strategies for growing customer value</a>.</p>
+
+  <div class="callout note">
+    <strong>Scope:</strong> This document covers the system design layer — triggers, conditions, flows, and tooling. It is implementation-agnostic and applies to most WhatsApp API platforms with automation capabilities.
+  </div>
+</section>
+
+<!-- ARCHITECTURE -->
+<section id="architecture">
+  <h2><span class="section-num">02 //</span> System Architecture</h2>
+
+  <p>The upsell engine has four layers. Each layer is independent — you can start with just the first two and add the others over time.</p>
+
+  <div class="arch-box">
+    <div class="arch-row">
+      <span class="arch-label">Layer 1</span>
+      <div class="flow-node trigger">Event Source</div>
+      <span class="flow-arrow">→</span>
+      <span style="color:var(--text2); font-size:13px;">Order systems, booking platforms, CRM, payment gateways</span>
+    </div>
+    <div class="arch-row">
+      <span class="arch-label">Layer 2</span>
+      <div class="flow-node condition">Decision Engine</div>
+      <span class="flow-arrow">→</span>
+      <span style="color:var(--text2); font-size:13px;">Rules: which customer, which offer, which timing</span>
+    </div>
+    <div class="arch-row">
+      <span class="arch-label">Layer 3</span>
+      <div class="flow-node action">Message Layer</div>
+      <span class="flow-arrow">→</span>
+      <span style="color:var(--text2); font-size:13px;">WhatsApp templates, interactive buttons, catalog links</span>
+    </div>
+    <div class="arch-row">
+      <span class="arch-label">Layer 4</span>
+      <div class="flow-node delay">Response Tracker</div>
+      <span class="flow-arrow">→</span>
+      <span style="color:var(--text2); font-size:13px;">Opened? Clicked? Purchased? Branch accordingly.</span>
+    </div>
+  </div>
+
+  <div class="callout tip">
+    <strong>Start small:</strong> Layer 1 + Layer 3 alone (fire message when order completes) gives you 60% of the value with 20% of the setup. Add the decision engine and tracker once you have baseline data.
+  </div>
+</section>
+
+<!-- FLOW LOGIC -->
+<section id="flow-logic">
+  <h2><span class="section-num">03 //</span> Flow Logic: Triggers → Conditions → Actions</h2>
+
+  <p>Every automation in this system follows the same pattern:</p>
+
+  <div class="code-block">
+    <div class="code-header"><span class="lang">FLOW PATTERN</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+    <pre><span class="k">TRIGGER</span>     <span class="c">// Something happened in the real world</span>
+    <span class="arrow">↓</span>
+<span class="k">DELAY</span>       <span class="c">// Wait for the right moment (optional)</span>
+    <span class="arrow">↓</span>
+<span class="k">CONDITION</span>   <span class="c">// Is this the right customer for this offer?</span>
+    <span class="arrow">↓</span>
+<span class="k">ACTION</span>      <span class="c">// Send the message / update CRM / branch</span>
+    <span class="arrow">↓</span>
+<span class="k">RESPONSE</span>    <span class="c">// Track what happened, branch next step</span></pre>
+  </div>
+
+  <h3>Trigger Types</h3>
+  <table>
+    <thead><tr><th>Trigger</th><th>Source</th><th>Upsell Opportunity</th></tr></thead>
+    <tbody>
+      <tr><td><code>order.completed</code></td><td>E-commerce / POS</td><td>Complementary product</td></tr>
+      <tr><td><code>appointment.confirmed</code></td><td>Booking system</td><td>Package upgrade, add-on service</td></tr>
+      <tr><td><code>payment.received</code></td><td>Payment gateway</td><td>Next-tier plan, extended warranty</td></tr>
+      <tr><td><code>delivery.confirmed</code></td><td>Shipping API</td><td>Review request + related product</td></tr>
+      <tr><td><code>days_since_last_order > 30</code></td><td>CRM</td><td>Reactivation + new offer</td></tr>
+      <tr><td><code>customer.tag = VIP</code></td><td>CRM segment</td><td>Early access, loyalty offer</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Condition Logic</h3>
+  <div class="code-block">
+    <div class="code-header"><span class="lang">PSEUDO LOGIC</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+    <pre><span class="k">IF</span> trigger == <span class="s">"order.completed"</span>
+  <span class="k">AND</span> order.category == <span class="s">"skincare"</span>
+  <span class="k">AND</span> customer.purchase_count >= <span class="n">2</span>
+  <span class="k">AND</span> last_upsell_sent > <span class="n">14</span> days ago
+<span class="k">THEN</span>
+  send_template(<span class="s">"skincare_bundle_offer"</span>)
+<span class="k">ELSE IF</span> customer.purchase_count == <span class="n">1</span>
+<span class="k">THEN</span>
+  send_template(<span class="s">"welcome_series_day3"</span>)
+<span class="k">ELSE</span>
+  <span class="c">// no action — do not spam new customers</span>
+  skip()</pre>
+  </div>
+
+  <div class="callout warn">
+    <strong>The cooldown rule is non-negotiable.</strong> Never trigger an upsell flow if the customer received a promotional message within the last 7–14 days. This is what separates a revenue system from a spam machine.
+  </div>
+</section>
+
+<!-- USE CASES -->
+<section id="use-cases">
+  <h2><span class="section-num">04 //</span> Real Use Cases by Sector</h2>
+
+  <h3>E-commerce — Post-Purchase Cross-Sell</h3>
+  <p>Customer buys a coffee machine. Two hours after delivery confirmation, they receive: <em>"Your machine is on its way. Customers who bought this usually grab the descaling kit too — here's 20% off for the next 48 hours."</em></p>
+  <p>This works because: (1) timing is peak trust, (2) the offer is contextually relevant, (3) scarcity is honest.</p>
+
+  <h3>Medical Clinics — Service Add-On</h3>
+  <p>Patient books a general checkup. After appointment confirmation: <em>"Would you like to add a full blood panel to your visit? Takes 5 extra minutes, results in 48 hours."</em></p>
+  <p>The upgrade offer is in the moment of commitment — not a cold message days later. For a complete implementation guide for healthcare, see <a href="https://zidnitech.com/whatsapp-api-for-medical-clinics-saudi-arabia/">how WhatsApp API works for medical clinics in Saudi Arabia</a>.</p>
+
+  <h3>Real Estate — Long-Cycle Reactivation</h3>
+  <p>Lead visited a property 45 days ago. No conversion. CRM trigger: <em>"The unit you viewed is now available in a smaller floor plan at a 12% lower entry price. Would you like updated details?"</em></p>
+
+  <h3>Service Businesses — Maintenance + Upsell</h3>
+  <p>Car service completed. 90-day trigger: <em>"It's been 3 months since your last service. We have availability this week — and we're running a tire check offer for returning customers."</em></p>
+</section>
+
+<!-- EXAMPLE FLOWS -->
+<section id="example-flows">
+  <h2><span class="section-num">05 //</span> Example Flows (Step-by-Step)</h2>
+
+  <h3>Flow A — Post-Purchase Upsell (E-commerce)</h3>
+  <div class="flow">
+    <div class="flow-node trigger">order.completed</div>
+    <span class="flow-arrow">→</span>
+    <div class="flow-node delay">+2h delay</div>
+    <span class="flow-arrow">→</span>
+    <div class="flow-node condition">first purchase?</div>
+    <span class="flow-arrow">→</span>
+    <div class="flow-node action">send bundle offer</div>
+  </div>
+  <div class="flow" style="margin-top:4px; padding-left: 40px;">
+    <span style="color:var(--text3); font-size:12px; font-family:var(--mono);">if clicked →</span>
+    <div class="flow-node action">send product link + CTA</div>
+    <span class="flow-arrow">→</span>
+    <div class="flow-node trigger">wait 24h</div>
+    <span class="flow-arrow">→</span>
+    <div class="flow-node condition">purchased?</div>
+  </div>
+  <div class="flow" style="margin-top:4px; padding-left: 40px;">
+    <span style="color:var(--text3); font-size:12px; font-family:var(--mono);">if not clicked →</span>
+    <div class="flow-node delay">+24h</div>
+    <span class="flow-arrow">→</span>
+    <div class="flow-node branch">FOMO message</div>
+    <span class="flow-arrow">→</span>
+    <div class="flow-node action">end sequence</div>
+  </div>
+
+  <h3>Flow B — Appointment Add-On (Clinic)</h3>
+  <div class="flow">
+    <div class="flow-node trigger">appointment.booked</div>
+    <span class="flow-arrow">→</span>
+    <div class="flow-node delay">+10m delay</div>
+    <span class="flow-arrow">→</span>
+    <div class="flow-node condition">service = general?</div>
+    <span class="flow-arrow">→</span>
+    <div class="flow-node action">send add-on offer</div>
+  </div>
+  <div class="flow" style="margin-top:4px; padding-left:40px;">
+    <span style="color:var(--text3); font-size:12px; font-family:var(--mono);">if accepted →</span>
+    <div class="flow-node action">update booking + confirm</div>
+    <span class="flow-arrow">→</span>
+    <div class="flow-node trigger">trigger reminder update</div>
+  </div>
+
+  <h3>Flow C — Reactivation (30+ days inactive)</h3>
+  <div class="flow">
+    <div class="flow-node trigger">days_inactive = 30</div>
+    <span class="flow-arrow">→</span>
+    <div class="flow-node condition">VIP tag?</div>
+    <span class="flow-arrow">→</span>
+    <div class="flow-node branch">YES → VIP offer</div>
+  </div>
+  <div class="flow" style="margin-top:4px;">
+    <div class="flow-node condition" style="visibility:hidden; width:0; padding:0; border:none;"></div>
+    <span style="color:var(--text3); font-size:12px; font-family:var(--mono); margin-left:6px;">NO →</span>
+    <div class="flow-node action">standard win-back</div>
+    <span class="flow-arrow">→</span>
+    <div class="flow-node delay">wait 5 days</div>
+    <span class="flow-arrow">→</span>
+    <div class="flow-node condition">no response?</div>
+    <span class="flow-arrow">→</span>
+    <div class="flow-node action">end / suppress 60d</div>
+  </div>
+</section>
+
+<!-- AUTOMATION SCENARIOS -->
+<section id="automation-scenarios">
+  <h2><span class="section-num">06 //</span> Automation Scenarios</h2>
+
+  <h3>Scenario 1 — Post-Purchase (Highest ROI)</h3>
+  <ul>
+    <li><strong>Timing:</strong> 2–4 hours after order completion or delivery confirmation</li>
+    <li><strong>Message type:</strong> Complementary product or service bundle</li>
+    <li><strong>Interactive element:</strong> Quick reply buttons [See Offer] [Not Now]</li>
+    <li><strong>Follow-up:</strong> If no click within 24h → one FOMO message → end</li>
+    <li><strong>Suppress if:</strong> Customer received promotional message in past 7 days</li>
+  </ul>
+
+  <h3>Scenario 2 — Tier Upgrade (Subscriptions / Services)</h3>
+  <ul>
+    <li><strong>Timing:</strong> After 3rd consecutive purchase or 60 days on base plan</li>
+    <li><strong>Message type:</strong> Usage-based nudge ("You've ordered 3 times — customers at this frequency usually move to our monthly plan and save 20%")</li>
+    <li><strong>Interactive element:</strong> [See Plan Details] [Stay on Current Plan]</li>
+    <li><strong>Branch logic:</strong> If [Stay] → tag as "upsell_declined_tier" → suppress for 90 days</li>
+  </ul>
+
+  <h3>Scenario 3 — Seasonal Reactivation</h3>
+  <ul>
+    <li><strong>Timing:</strong> 30 days before Ramadan, Eid, or peak season — filter for customers inactive 45+ days</li>
+    <li><strong>Message type:</strong> Seasonal offer + urgency ("Back for the season — here's what's new")</li>
+    <li><strong>Segment logic:</strong> Split by past purchase category for relevance</li>
+    <li><strong>Cooldown:</strong> Max one seasonal message per customer per campaign</li>
+  </ul>
+
+  <h3>Scenario 4 — Cross-Sell Based on Purchase History</h3>
+  <div class="code-block">
+    <div class="code-header"><span class="lang">SEGMENT LOGIC</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+    <pre><span class="c">// Map purchase categories to cross-sell targets</span>
+<span class="k">const</span> <span class="v">crossSellMap</span> = {
+  <span class="s">"skincare"</span>       : <span class="s">"sunscreen_bundle"</span>,
+  <span class="s">"dental_checkup"</span> : <span class="s">"whitening_addon"</span>,
+  <span class="s">"car_service"</span>    : <span class="s">"tire_rotation"</span>,
+  <span class="s">"apartment_visit"</span>: <span class="s">"villa_alternative"</span>
+}
+
+<span class="k">function</span> <span class="n">getCrossSell</span>(lastPurchaseCategory) {
+  <span class="k">return</span> crossSellMap[lastPurchaseCategory] || <span class="s">"generic_offer"</span>;
+}</pre>
+  </div>
+</section>
+
+<!-- TOOLS LAYER -->
+<section id="tools">
+  <h2><span class="section-num">07 //</span> Tools Layer</h2>
+
+  <p>The architecture above is tool-agnostic. What you need from any implementation tool:</p>
+
+  <table>
+    <thead><tr><th>Capability</th><th>Required</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td>Webhook receiver</td><td>✅</td><td>Must accept POST from your order/booking system</td></tr>
+      <tr><td>Flow/automation builder</td><td>✅</td><td>Visual or API-based, with delay + condition support</td></tr>
+      <tr><td>Template management</td><td>✅</td><td>Meta-approved templates with variable injection</td></tr>
+      <tr><td>Contact segmentation</td><td>✅</td><td>Tag-based or custom field filtering</td></tr>
+      <tr><td>Cooldown / frequency cap</td><td>✅</td><td>Non-negotiable for compliance and deliverability</td></tr>
+      <tr><td>CRM sync</td><td>⚠️ Recommended</td><td>Enables behavioral segmentation at scale</td></tr>
+      <tr><td>Analytics / conversion tracking</td><td>⚠️ Recommended</td><td>Required to optimize over time</td></tr>
+    </tbody>
+  </table>
+
+  <p>For no-code teams, platforms like <strong>Wati</strong> cover the entire stack above with a visual flow builder, template manager, and CRM integrations out of the box. For developer teams, combining <strong>360dialog</strong> (API access) with a custom backend gives maximum flexibility at lower per-message cost.</p>
+
+  <p>A practical comparison of platforms available in the Saudi market — with honest trade-offs — is covered in the analysis of <a href="https://zidnitech.com/best-whatsapp-api-providers-saudi-arabia-2026/">best WhatsApp API providers in Saudi Arabia for 2026</a>.</p>
+</section>
+
+<!-- MISTAKES -->
+<section id="mistakes">
+  <h2><span class="section-num">08 //</span> Key Mistakes That Kill Upsell Systems</h2>
+
+  <h3>Mistake 1 — No Cooldown Logic</h3>
+  <p>Sending an upsell message to a customer who received a campaign three days ago is the fastest way to get blocked. Implement a minimum 7-day suppression window across all outbound campaigns.</p>
+
+  <h3>Mistake 2 — Generic Offers to Everyone</h3>
+  <p>A "20% off everything" blast to your entire customer list is not an upsell engine — it's a broadcast. Real upsell systems use purchase history to make the offer feel inevitable, not promotional.</p>
+
+  <h3>Mistake 3 — Wrong Timing</h3>
+  <p>Sending an upsell 5 minutes after purchase (too fast — feels automated and cold) or 30 days later (too slow — trust window closed) both fail. The optimal window is <strong>2–6 hours post-purchase</strong> for most categories.</p>
+
+  <h3>Mistake 4 — No Exit Branch</h3>
+  <p>Every flow must have a clean exit condition. If a customer clicks "Not Now," suppress that offer for at least 30 days. Systems without exit logic annoy customers until they opt out entirely.</p>
+
+  <h3>Mistake 5 — Skipping Template Approval</h3>
+  <p>Every outbound message outside a 24-hour conversation window requires a Meta-approved template. Upsell flows built without pre-approved templates will fail to send. Build template approval into your launch timeline — it typically takes a few minutes to a few hours, but requires planning.</p>
+
+  <h3>Mistake 6 — Measuring Opens Instead of Revenue</h3>
+  <p>Open rate tells you the message arrived. Revenue per flow tells you whether the system is working. Track: messages sent → clicked → purchased, and calculate revenue per automation trigger. Everything else is vanity.</p>
+</section>
+
+<!-- BLUEPRINT -->
+<section id="blueprint">
+  <h2><span class="section-num">09 //</span> Final System Blueprint</h2>
+
+  <div class="code-block">
+    <div class="code-header"><span class="lang">UPSELL ENGINE — COMPLETE BLUEPRINT</span></div>
+    <pre><span class="c">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span>
+<span class="k">LAYER 1: EVENT SOURCES</span>
+<span class="c">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span>
+  Order system   <span class="arrow">→</span>  Webhook  <span class="arrow">→</span>  Automation platform
+  Booking system <span class="arrow">→</span>  Webhook  <span class="arrow">→</span>  Automation platform
+  CRM events     <span class="arrow">→</span>  Zapier / native  <span class="arrow">→</span>  Flow trigger
+
+<span class="c">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span>
+<span class="k">LAYER 2: DECISION ENGINE</span>
+<span class="c">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span>
+  [ ] Cooldown check     (< 7 days since last promo?)
+  [ ] Segment match      (purchase category → offer map)
+  [ ] Timing gate        (2-6h post-purchase / 30d inactive)
+  [ ] Frequency cap      (max 2 upsell messages/month)
+
+<span class="c">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span>
+<span class="k">LAYER 3: MESSAGE EXECUTION</span>
+<span class="c">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span>
+  Approved template  <span class="arrow">→</span>  Variable injection  <span class="arrow">→</span>  Send
+  Interactive buttons: [Accept Offer] [Remind Later] [No Thanks]
+
+<span class="c">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span>
+<span class="k">LAYER 4: RESPONSE TRACKING</span>
+<span class="c">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span>
+  [Accept]        <span class="arrow">→</span>  Send product link  <span class="arrow">→</span>  Log conversion
+  [Remind Later]  <span class="arrow">→</span>  +24h delay  <span class="arrow">→</span>  Resend once  <span class="arrow">→</span>  End
+  [No Thanks]     <span class="arrow">→</span>  Tag "declined"  <span class="arrow">→</span>  Suppress 30d
+  [No Response]   <span class="arrow">→</span>  +24h  <span class="arrow">→</span>  FOMO message  <span class="arrow">→</span>  End
+
+<span class="c">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span>
+<span class="k">METRICS TO TRACK</span>
+<span class="c">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span>
+  Revenue per trigger        (primary KPI)
+  Click-through rate         (message quality signal)
+  Opt-out rate               (frequency / relevance signal)
+  Conversion by segment      (offer-market fit signal)
+  Days to conversion         (timing optimization input)</pre>
+  </div>
+
+  <div class="callout tip">
+    <strong>Implementation order:</strong> Start with Scenario 1 (post-purchase) only. Run it for 30 days. Measure revenue per trigger. Only then add Scenario 2. Each flow added without measured baseline makes debugging harder.
+  </div>
+
+  <p>When implemented correctly, a WhatsApp upsell engine doesn't feel like marketing to your customers — it feels like service. The right offer, at the right moment, delivered on the channel they already use.</p>
+
+  <p>That's not manipulation. That's operational intelligence.</p>
+
+  <p>The difference between a business that uses WhatsApp for support and one that uses it as a revenue layer is exactly this: a system with logic, not just a chat window with a button.</p>
+</section>
+
+<div class="footer">
+  <p>Built for operators and founders in Saudi Arabia and the MENA region.<br>
+  Companion articles and implementation guides: <a href="https://zidnitech.com" rel="noopener">zidnitech.com</a></p>
+  <p style="margin-top:8px;">Related: <a href="https://zidnitech.com/whatsapp-upsell-strategies-guide/" rel="noopener">WhatsApp upsell strategies guide</a> · <a href="https://zidnitech.com/best-whatsapp-api-providers-saudi-arabia-2026/" rel="noopener">Best WhatsApp API providers 2026</a></p>
+</div>
+
+<script>
+function copyCode(btn) {
+  const pre = btn.closest('.code-block').querySelector('pre');
+  navigator.clipboard.writeText(pre.innerText).then(() => {
+    btn.textContent = 'copied!';
+    btn.style.color = 'var(--green)';
+    setTimeout(() => { btn.textContent = 'copy'; btn.style.color = ''; }, 2000);
+  });
+}
+</script>
+</body>
+</html>
