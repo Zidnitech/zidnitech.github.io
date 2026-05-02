@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>whatsapp-business-automation — Event-Driven Sales Engine</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600&family=Clash+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; }
+
+:root {
+  --bg:      #080c10;
+  --bg2:     #0d1219;
+  --bg3:     #111820;
+  --surface: #141d27;
+  --border:  #1e2d3d;
+  --border2: #243447;
+  --green:   #00ff88;
+  --green2:  #00cc6a;
+  --green3:  #004d29;
+  --cyan:    #00d4ff;
+  --yellow:  #ffd166;
+  --orange:  #ff8c42;
+  --red:     #ff4757;
+  --purple:  #a855f7;
+  --text:    #d4e6f1;
+  --text2:   #7a9bb5;
+  --text3:   #3d5a73;
+  --mono:    'Fira Code', monospace;
+  --display: 'Clash Display', sans-serif;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 13.5px;
+  line-height: 1.75;
+  overflow-x: hidden;
+}
+
+/* Scanlines overlay */
+body::before {
+  content:'';
+  position:fixed; inset:0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0,255,136,0.012) 2px,
+    rgba(0,255,136,0.012) 4px
+  );
+  pointer-events:none;
+  z-index:0;
+}
+
+/* Grid */
+body::after {
+  content:'';
+  position:fixed; inset:0;
+  background-image:
+    linear-gradient(rgba(0,255,136,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,255,136,0.025) 1px, transparent 1px);
+  background-size: 48px 48px;
+  pointer-events:none;
+  z-index:0;
+}
+
+.wrap { max-width:1000px; margin:0 auto; padding:0 24px 100px; position:relative; z-index:1; }
+
+/* ── HEADER ── */
+header {
+  padding: 48px 0 36px;
+  border-bottom: 1px solid var(--border);
+  position: relative;
+}
+
+.repo-line {
+  font-size:12px; color:var(--text3);
+  margin-bottom:14px;
+  display:flex; align-items:center; gap:6px;
+}
+.repo-line .sep { color:var(--border2); }
+.repo-line .name { color:var(--cyan); }
+
+.repo-title {
+  font-family: var(--display);
+  font-size: clamp(26px,4vw,44px);
+  font-weight:700;
+  line-height:1.15;
+  color:#fff;
+  margin-bottom:14px;
+}
+.repo-title .accent { color:var(--green); }
+
+.repo-desc { color:var(--text2); max-width:660px; font-size:14px; margin-bottom:22px; }
+
+.badge-row { display:flex; flex-wrap:wrap; gap:7px; margin-bottom:28px; }
+.badge {
+  font-size:11px; padding:3px 11px; border-radius:4px;
+  font-family:var(--mono); border:1px solid; white-space:nowrap;
+}
+.bd-green  { color:var(--green);  border-color:rgba(0,255,136,.3); background:rgba(0,255,136,.06); }
+.bd-cyan   { color:var(--cyan);   border-color:rgba(0,212,255,.3); background:rgba(0,212,255,.06); }
+.bd-yellow { color:var(--yellow); border-color:rgba(255,209,102,.3); background:rgba(255,209,102,.06); }
+.bd-purple { color:var(--purple); border-color:rgba(168,85,247,.3); background:rgba(168,85,247,.06); }
+.bd-orange { color:var(--orange); border-color:rgba(255,140,66,.3); background:rgba(255,140,66,.06); }
+
+.stat-row { display:flex; flex-wrap:wrap; gap:24px; font-size:12px; color:var(--text3); }
+.stat-row span::before { margin-right:5px; }
+
+/* ── NAV ── */
+nav {
+  position:sticky; top:0; z-index:99;
+  background:rgba(8,12,16,.9);
+  backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--border);
+}
+nav .inner { display:flex; overflow-x:auto; gap:0; }
+nav a {
+  color:var(--text3); text-decoration:none;
+  padding:13px 18px; font-size:12px; white-space:nowrap;
+  border-bottom:2px solid transparent;
+  transition:all .15s;
+}
+nav a:hover { color:var(--green); border-bottom-color:var(--green); }
+
+/* ── SECTIONS ── */
+section { padding:52px 0; border-bottom:1px solid var(--border); }
+section:last-of-type { border-bottom:none; }
+
+h2 {
+  font-family:var(--display);
+  font-size:20px; font-weight:600;
+  color:#fff; margin-bottom:18px;
+  display:flex; align-items:center; gap:10px;
+}
+h2 .n { color:var(--green); font-size:12px; font-family:var(--mono); font-weight:400; opacity:.7; }
+
+h3 {
+  font-family:var(--display);
+  font-size:15px; font-weight:600;
+  color:var(--cyan); margin:28px 0 11px;
+}
+
+p { color:var(--text2); margin-bottom:13px; line-height:1.8; }
+p strong { color:var(--text); font-weight:500; }
+
+a { color:var(--green); text-decoration:none; }
+a:hover { text-decoration:underline; }
+
+/* ── CODE BLOCKS ── */
+.cb {
+  background:var(--bg2);
+  border:1px solid var(--border);
+  border-radius:6px;
+  margin:16px 0;
+  overflow:hidden;
+}
+.cb-head {
+  background:var(--bg3);
+  border-bottom:1px solid var(--border);
+  padding:9px 16px;
+  display:flex; align-items:center; justify-content:space-between;
+  font-size:11px;
+}
+.cb-lang { color:var(--green); text-transform:uppercase; letter-spacing:.07em; }
+.cb-file { color:var(--text3); }
+.cp-btn {
+  background:transparent; border:1px solid var(--border);
+  color:var(--text3); padding:2px 9px; border-radius:3px;
+  font-size:11px; font-family:var(--mono); cursor:pointer;
+  transition:all .15s;
+}
+.cp-btn:hover { color:var(--green); border-color:var(--green); }
+pre { padding:18px 20px; overflow-x:auto; font-size:12.5px; line-height:1.65; }
+
+/* Syntax */
+.kw { color:#c792ea; }
+.st { color:#c3e88d; }
+.cm { color:var(--text3); font-style:italic; }
+.fn { color:#82aaff; }
+.vr { color:var(--cyan); }
+.nm { color:var(--orange); }
+.op { color:var(--yellow); }
+.co { color:#546e7a; }
+
+/* ── FLOW DIAGRAM ── */
+.flow { display:flex; flex-wrap:wrap; align-items:center; gap:6px; margin:14px 0; font-size:12px; }
+.fn2 {
+  padding:6px 14px; border-radius:4px; border:1px solid;
+  font-family:var(--mono); white-space:nowrap;
+}
+.fn2.trigger  { color:var(--green);  border-color:rgba(0,255,136,.4); background:rgba(0,255,136,.07); }
+.fn2.delay    { color:var(--yellow); border-color:rgba(255,209,102,.4); background:rgba(255,209,102,.07); }
+.fn2.cond     { color:var(--purple); border-color:rgba(168,85,247,.4); background:rgba(168,85,247,.07); }
+.fn2.action   { color:var(--cyan);   border-color:rgba(0,212,255,.4); background:rgba(0,212,255,.07); }
+.fn2.branch   { color:var(--orange); border-color:rgba(255,140,66,.4); background:rgba(255,140,66,.07); }
+.fa { color:var(--text3); font-size:14px; }
+
+/* ── TABLES ── */
+table { width:100%; border-collapse:collapse; margin:16px 0; font-size:12.5px; }
+th {
+  background:var(--bg3); color:var(--text2); text-align:left;
+  padding:9px 14px; border-bottom:1px solid var(--border2);
+  font-size:11px; text-transform:uppercase; letter-spacing:.05em; font-weight:500;
+}
+td { padding:9px 14px; border-bottom:1px solid var(--border); color:var(--text2); vertical-align:top; }
+tr:last-child td { border-bottom:none; }
+tr:hover td { background:rgba(255,255,255,.015); }
+td code { color:var(--green); font-size:12px; background:rgba(0,255,136,.07); padding:1px 6px; border-radius:3px; }
+
+/* ── CALLOUTS ── */
+.call {
+  border-left:3px solid; padding:13px 17px;
+  border-radius:0 4px 4px 0; margin:16px 0; font-size:13px;
+}
+.call.info  { border-color:var(--cyan);   background:rgba(0,212,255,.05);  color:var(--text2); }
+.call.warn  { border-color:var(--yellow); background:rgba(255,209,102,.05);color:var(--text2); }
+.call.tip   { border-color:var(--green);  background:rgba(0,255,136,.05);  color:var(--text2); }
+.call strong { color:var(--text); }
+
+/* ── ARTICLE CARDS ── */
+.card-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:14px; margin-top:20px; }
+.card {
+  background:var(--bg2); border:1px solid var(--border);
+  border-radius:6px; padding:20px; text-decoration:none;
+  transition:all .2s; display:block; position:relative; overflow:hidden;
+}
+.card::before {
+  content:''; position:absolute;
+  top:0; left:0; width:3px; height:100%;
+  background:var(--green); opacity:0; transition:opacity .2s;
+}
+.card:hover { border-color:var(--border2); transform:translateY(-2px); }
+.card:hover::before { opacity:1; }
+.card-tag {
+  font-size:10px; text-transform:uppercase; letter-spacing:.1em;
+  color:var(--green); margin-bottom:8px;
+  display:flex; align-items:center; gap:6px;
+}
+.card-tag::before {
+  content:'AR'; background:rgba(0,255,136,.1);
+  border:1px solid rgba(0,255,136,.2); padding:1px 6px; border-radius:2px;
+}
+.card-title { color:var(--text); font-size:13.5px; margin-bottom:8px; line-height:1.45; font-family:var(--display); font-weight:600; }
+.card-desc  { color:var(--text3); font-size:12px; line-height:1.6; }
+.card-arrow { color:var(--green); margin-top:14px; font-size:12px; }
+
+code {
+  font-family:var(--mono); font-size:12px;
+  color:var(--orange); background:rgba(255,140,66,.1);
+  padding:1px 6px; border-radius:3px;
+}
+
+ul, ol { padding-left:20px; margin:10px 0 14px; }
+li { color:var(--text2); margin:5px 0; }
+li strong { color:var(--text); }
+
+/* ── ENDPOINT ── */
+.ep { background:var(--bg2); border:1px solid var(--border); border-radius:6px; margin:14px 0; overflow:hidden; }
+.ep-head { padding:11px 16px; display:flex; align-items:center; gap:12px; border-bottom:1px solid var(--border); background:var(--bg3); }
+.method {
+  font-size:11px; font-weight:700; padding:2px 9px;
+  border-radius:3px; text-transform:uppercase; letter-spacing:.05em; font-family:var(--mono);
+}
+.post { background:rgba(0,255,136,.12); color:var(--green); border:1px solid rgba(0,255,136,.3); }
+.get  { background:rgba(0,212,255,.1);  color:var(--cyan);  border:1px solid rgba(0,212,255,.25); }
+.ep-path { color:var(--text); font-size:13px; font-family:var(--mono); }
+.ep-desc { color:var(--text3); font-size:12px; }
+.ep-body { padding:14px 16px; font-size:13px; color:var(--text2); }
+
+/* ── FOOTER ── */
+footer {
+  padding:40px 0; border-top:1px solid var(--border);
+  font-size:12px; color:var(--text3); text-align:center;
+}
+footer a { color:var(--green); }
+
+@media(max-width:600px){
+  .flow { flex-direction:column; align-items:flex-start; }
+  nav .inner { padding:0 4px; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- HEADER -->
+<header>
+  <div class="repo-line">
+    <span>zidnitech</span>
+    <span class="sep">/</span>
+    <span class="name">whatsapp-business-automation</span>
+  </div>
+  <div class="repo-title">
+    WhatsApp API —<br>
+    <span class="accent">Event-Driven Sales Engine</span>
+  </div>
+  <p class="repo-desc">
+    A production reference for building automated WhatsApp business systems:
+    webhooks, interactive messages, broadcast pipelines, and Zapier-connected automation flows.
+    Each section links to the Arabic-language business guides covering the commercial strategy behind the code.
+  </p>
+  <div class="badge-row">
+    <span class="badge bd-green">Node.js 20+</span>
+    <span class="badge bd-cyan">WhatsApp Cloud API v19</span>
+    <span class="badge bd-yellow">Webhooks</span>
+    <span class="badge bd-purple">Interactive Messages</span>
+    <span class="badge bd-orange">Zapier / Make</span>
+    <span class="badge bd-green">Saudi Market Tested</span>
+  </div>
+  <div class="stat-row">
+    <span>⚡ Event-driven architecture</span>
+    <span>📦 Zero runtime dependencies for core flows</span>
+    <span>🌍 Optimized for MENA market patterns</span>
+  </div>
+</header>
+
+<!-- NAV -->
+<nav>
+  <div class="inner">
+    <a href="#overview">Overview</a>
+    <a href="#webhooks">Webhooks</a>
+    <a href="#interactive">Interactive Msgs</a>
+    <a href="#broadcast">Broadcast</a>
+    <a href="#zapier">Zapier Flows</a>
+    <a href="#api-ref">API Reference</a>
+    <a href="#patterns">Patterns</a>
+    <a href="#resources">Arabic Docs</a>
+  </div>
+</nav>
+
+<!-- OVERVIEW -->
+<section id="overview">
+  <h2><span class="n">01 //</span> Overview</h2>
+
+  <p>This reference documents the technical layer of a WhatsApp business automation system. The <strong>commercial strategy</strong> behind each component — why to build it, what ROI to expect, which markets it serves — lives in the Arabic-language guides linked throughout. This page covers the <strong>how</strong>.</p>
+
+  <p>The system is built around four primitives:</p>
+
+  <ul>
+    <li><strong>Webhooks</strong> — inbound event stream from Meta and your business systems</li>
+    <li><strong>Interactive Messages</strong> — Reply Buttons and List Messages that drive structured user choices</li>
+    <li><strong>Broadcast Pipelines</strong> — segmented outbound campaigns at scale</li>
+    <li><strong>Automation Connectors</strong> — Zapier / Make flows that bridge WhatsApp with your CRM, store, and calendar</li>
+  </ul>
+
+  <h3>System Architecture</h3>
+  <div class="cb">
+    <div class="cb-head"><span class="cb-lang">DIAGRAM</span></div>
+    <pre>
+  <span class="cm">┌─────────────────────────────────────────────────┐</span>
+  <span class="cm">│              INBOUND EVENTS                     │</span>
+  <span class="cm">└───────────────────┬─────────────────────────────┘</span>
+                      <span class="op">│</span>
+         <span class="vr">Meta Webhooks</span>  <span class="op">│</span>  <span class="vr">Business System Events</span>
+         <span class="cm">(user replies)</span>  <span class="op">│</span>  <span class="cm">(orders, bookings, CRM)</span>
+                      <span class="op">▼</span>
+  <span class="cm">┌─────────────────────────────────────────────────┐</span>
+  <span class="cm">│         EVENT ROUTER (Express / Webhook)        │</span>
+  <span class="cm">│  verify sig → parse → classify → enqueue       │</span>
+  <span class="cm">└──────────┬──────────────────────────────────────┘</span>
+             <span class="op">│</span>
+    <span class="op">┌─────────┴──────────┐</span>
+    <span class="op">▼</span>                    <span class="op">▼</span>
+<span class="cm">Reply Handler      Automation Worker</span>
+<span class="cm">(chatbot logic)    (BullMQ / Zapier)</span>
+    <span class="op">│</span>                    <span class="op">│</span>
+    <span class="op">└──────────┬─────────┘</span>
+               <span class="op">▼</span>
+  <span class="cm">┌─────────────────────────────────────────────────┐</span>
+  <span class="cm">│       WhatsApp Cloud API  (outbound)            │</span>
+  <span class="cm">│  templates · interactive · media · catalog     │</span>
+  <span class="cm">└─────────────────────────────────────────────────┘</span></pre>
+  </div>
+
+  <div class="call tip">
+    <strong>Saudi Market note:</strong> COD confirmation flows, appointment no-show prevention, and Ramadan broadcast timing are the three highest-ROI automation patterns for this market. Each is covered in its own section below.
+  </div>
+</section>
+
+<!-- WEBHOOKS -->
+<section id="webhooks">
+  <h2><span class="n">02 //</span> Webhooks & Integration</h2>
+
+  <p>Webhooks are the nervous system of any WhatsApp automation. Meta fires a POST to your endpoint for every inbound message, delivery receipt, and button click. Your business systems fire their own events (order placed, appointment booked, payment received) that trigger outbound messages.</p>
+
+  <p>The Arabic guide on <a href="https://zidnitech.com/webhook-integration-whatsapp-api/">ما هو Webhook والـ Integration وكيف يربطان واتساب بأنظمتك</a> covers the business logic and ROI behind this architecture in full detail — treating webhooks not as a technical concept but as the foundation of a customer communication infrastructure.</p>
+
+  <h3>Incoming Webhook — Signature Verification</h3>
+  <div class="cb">
+    <div class="cb-head">
+      <span class="cb-lang">JS</span>
+      <span class="cb-file">src/webhooks/verify.js</span>
+      <button class="cp-btn" onclick="cp(this)">copy</button>
+    </div>
+    <pre><span class="kw">const</span> <span class="vr">crypto</span> = <span class="fn">require</span>(<span class="st">'crypto'</span>);
+
+<span class="cm">/**
+ * Verify Meta HMAC-SHA256 signature
+ * Required for every inbound webhook — reject anything that fails
+ */</span>
+<span class="kw">function</span> <span class="fn">verifyMetaSignature</span>(<span class="vr">rawBody</span>, <span class="vr">sigHeader</span>) {
+  <span class="kw">const</span> <span class="vr">expected</span> = <span class="st">'sha256='</span> + <span class="vr">crypto</span>
+    .<span class="fn">createHmac</span>(<span class="st">'sha256'</span>, <span class="vr">process</span>.env.<span class="nm">META_APP_SECRET</span>)
+    .<span class="fn">update</span>(<span class="vr">rawBody</span>)
+    .<span class="fn">digest</span>(<span class="st">'hex'</span>);
+
+  <span class="kw">return</span> <span class="vr">crypto</span>.<span class="fn">timingSafeEqual</span>(
+    <span class="vr">Buffer</span>.<span class="fn">from</span>(<span class="vr">expected</span>),
+    <span class="vr">Buffer</span>.<span class="fn">from</span>(<span class="vr">sigHeader</span>)
+  );
+}
+
+<span class="cm">/**
+ * Express middleware — attach rawBody for signature check
+ */</span>
+<span class="kw">const</span> <span class="vr">rawBodyParser</span> = <span class="fn">express</span>.<span class="fn">json</span>({
+  <span class="fn">verify</span>: (<span class="vr">req</span>, <span class="vr">res</span>, <span class="vr">buf</span>) => { <span class="vr">req</span>.rawBody = <span class="vr">buf</span>; }
+});
+
+<span class="cm">/**
+ * Main webhook receiver
+ */</span>
+<span class="vr">router</span>.<span class="fn">post</span>(<span class="st">'/webhook'</span>, <span class="vr">rawBodyParser</span>, <span class="kw">async</span> (<span class="vr">req</span>, <span class="vr">res</span>) => {
+  <span class="kw">const</span> <span class="vr">sig</span> = <span class="vr">req</span>.headers[<span class="st">'x-hub-signature-256'</span>];
+
+  <span class="kw">if</span> (!<span class="fn">verifyMetaSignature</span>(<span class="vr">req</span>.rawBody, <span class="vr">sig</span>)) {
+    <span class="kw">return</span> <span class="vr">res</span>.<span class="fn">status</span>(<span class="nm">401</span>).<span class="fn">end</span>();
+  }
+
+  <span class="vr">res</span>.<span class="fn">status</span>(<span class="nm">200</span>).<span class="fn">end</span>(); <span class="cm">// Acknowledge immediately</span>
+  <span class="kw">await</span> <span class="fn">processEvents</span>(<span class="vr">req</span>.body);
+});</pre>
+  </div>
+
+  <h3>Event Classifier — Route Inbound Messages</h3>
+  <div class="cb">
+    <div class="cb-head">
+      <span class="cb-lang">JS</span>
+      <span class="cb-file">src/webhooks/classifier.js</span>
+      <button class="cp-btn" onclick="cp(this)">copy</button>
+    </div>
+    <pre><span class="kw">async function</span> <span class="fn">processEvents</span>(<span class="vr">payload</span>) {
+  <span class="kw">const</span> <span class="vr">entry</span> = <span class="vr">payload</span>.entry?.[<span class="nm">0</span>];
+  <span class="kw">const</span> <span class="vr">changes</span> = <span class="vr">entry</span>?.changes?.[<span class="nm">0</span>]?.value;
+  <span class="kw">if</span> (!<span class="vr">changes</span>) <span class="kw">return</span>;
+
+  <span class="cm">// Delivery / read receipts</span>
+  <span class="kw">if</span> (<span class="vr">changes</span>.statuses) {
+    <span class="kw">await</span> <span class="fn">handleStatuses</span>(<span class="vr">changes</span>.statuses);
+    <span class="kw">return</span>;
+  }
+
+  <span class="kw">const</span> <span class="vr">msg</span> = <span class="vr">changes</span>.messages?.[<span class="nm">0</span>];
+  <span class="kw">if</span> (!<span class="vr">msg</span>) <span class="kw">return</span>;
+
+  <span class="kw">const</span> <span class="vr">handlers</span> = {
+    <span class="st">'text'</span>        : <span class="fn">handleText</span>,
+    <span class="st">'interactive'</span> : <span class="fn">handleInteractive</span>,  <span class="cm">// button / list reply</span>
+    <span class="st">'image'</span>       : <span class="fn">handleMedia</span>,
+    <span class="st">'document'</span>    : <span class="fn">handleMedia</span>,
+    <span class="st">'location'</span>    : <span class="fn">handleLocation</span>,
+    <span class="st">'order'</span>       : <span class="fn">handleOrder</span>,        <span class="cm">// catalog order</span>
+  };
+
+  <span class="kw">const</span> <span class="vr">handler</span> = <span class="vr">handlers</span>[<span class="vr">msg</span>.type] || <span class="fn">handleUnknown</span>;
+  <span class="kw">await</span> <span class="fn">handler</span>(<span class="vr">msg</span>, <span class="vr">changes</span>.contacts?.[<span class="nm">0</span>]);
+}</pre>
+  </div>
+
+  <h3>Business System Webhook — Order Event</h3>
+  <div class="cb">
+    <div class="cb-head">
+      <span class="cb-lang">JS</span>
+      <span class="cb-file">src/webhooks/order.js</span>
+      <button class="cp-btn" onclick="cp(this)">copy</button>
+    </div>
+    <pre><span class="cm">/**
+ * WooCommerce / Shopify / Salla / Zid webhook
+ * Fires when order is placed → enqueue WhatsApp confirmation
+ */</span>
+<span class="vr">router</span>.<span class="fn">post</span>(<span class="st">'/webhooks/order-created'</span>, <span class="vr">rawBodyParser</span>, <span class="kw">async</span> (<span class="vr">req</span>, <span class="vr">res</span>) => {
+  <span class="fn">verifyStoreSignature</span>(<span class="vr">req</span>);       <span class="cm">// HMAC per platform</span>
+  <span class="vr">res</span>.<span class="fn">status</span>(<span class="nm">200</span>).<span class="fn">end</span>();
+
+  <span class="kw">const</span> <span class="vr">order</span> = <span class="vr">req</span>.body;
+  <span class="kw">const</span> <span class="vr">phone</span> = <span class="fn">toE164</span>(<span class="vr">order</span>.billing.phone); <span class="cm">// Saudi: 966XXXXXXXX</span>
+
+  <span class="cm">// Route by payment method</span>
+  <span class="kw">const</span> <span class="vr">jobName</span> = <span class="vr">order</span>.payment_method === <span class="st">'cod'</span>
+    ? <span class="st">'cod_confirmation'</span>    <span class="cm">// → interactive confirm/cancel buttons</span>
+    : <span class="st">'order_confirmation'</span>; <span class="cm">// → plain receipt template</span>
+
+  <span class="kw">await</span> <span class="vr">queue</span>.<span class="fn">add</span>(<span class="vr">jobName</span>, {
+    <span class="vr">to</span>: <span class="vr">phone</span>,
+    <span class="vr">orderId</span>: <span class="vr">order</span>.id,
+    <span class="vr">total</span>: <span class="vr">order</span>.total,
+    <span class="vr">items</span>: <span class="vr">order</span>.line_items.<span class="fn">map</span>(<span class="vr">i</span> => <span class="vr">i</span>.name),
+  }, { <span class="vr">jobId</span>: <span class="st">`order-<span class="vr">${order.id}</span>`</span> }); <span class="cm">// dedup</span>
+});</pre>
+  </div>
+</section>
+
+<!-- INTERACTIVE MESSAGES -->
+<section id="interactive">
+  <h2><span class="n">03 //</span> Interactive Messages: Reply Buttons & List Messages</h2>
+
+  <p>Interactive messages are the highest-leverage primitive in WhatsApp API. They eliminate free-text parsing, guide users through structured flows, and produce clean signals your system can act on deterministically.</p>
+
+  <p>The full business case — including A/B test results, conversion rate comparisons, and real-world examples from Saudi e-commerce and clinic bookings — is in the Arabic guide: <a href="https://zidnitech.com/whatsapp-reply-buttons-vs-list-messages/">الأزرار التفاعلية في واتساب: List Messages و Reply Buttons وأثرهم على المبيعات</a>.</p>
+
+  <h3>Reply Buttons — COD Confirmation</h3>
+  <div class="cb">
+    <div class="cb-head">
+      <span class="cb-lang">JS</span>
+      <span class="cb-file">src/messages/cod-confirm.js</span>
+      <button class="cp-btn" onclick="cp(this)">copy</button>
+    </div>
+    <pre><span class="cm">/**
+ * COD confirmation with Reply Buttons
+ * Saudi market: ~20% cancellation rate without this step → drops to 8%
+ */</span>
+<span class="kw">async function</span> <span class="fn">sendCodConfirmation</span>({ <span class="vr">to</span>, <span class="vr">orderId</span>, <span class="vr">total</span>, <span class="vr">items</span> }) {
+  <span class="kw">return</span> <span class="fn">sendMessage</span>({
+    <span class="vr">to</span>,
+    <span class="vr">type</span>: <span class="st">'interactive'</span>,
+    <span class="vr">interactive</span>: {
+      <span class="vr">type</span>: <span class="st">'button'</span>,
+      <span class="vr">body</span>: {
+        <span class="vr">text</span>:
+          <span class="st">`شكراً! 🎉 طلبك #<span class="vr">${orderId}</span> تم استلامه.\n`</span> +
+          <span class="st">`💰 المبلغ: <span class="vr">${total}</span> ر.س (نقداً)\n`</span> +
+          <span class="st">`📦 المنتجات: <span class="vr">${items.join(', ')}</span>\n\n`</span> +
+          <span class="st">`هل تؤكد الطلب؟`</span>
+      },
+      <span class="vr">action</span>: {
+        <span class="vr">buttons</span>: [
+          { <span class="vr">type</span>: <span class="st">'reply'</span>, <span class="vr">reply</span>: { <span class="vr">id</span>: <span class="st">`confirm_<span class="vr">${orderId}</span>`</span>, <span class="vr">title</span>: <span class="st">'✅ تأكيد'</span> } },
+          { <span class="vr">type</span>: <span class="st">'reply'</span>, <span class="vr">reply</span>: { <span class="vr">id</span>: <span class="st">`cancel_<span class="vr">${orderId}</span>`</span>,  <span class="vr">title</span>: <span class="st">'❌ إلغاء'</span>  } },
+          { <span class="vr">type</span>: <span class="st">'reply'</span>, <span class="vr">reply</span>: { <span class="vr">id</span>: <span class="st">`later_<span class="vr">${orderId}</span>`</span>,  <span class="vr">title</span>: <span class="st">'⏰ لاحقاً'</span>  } },
+        ]
+      }
+    }
+  });
+}</pre>
+  </div>
+
+  <h3>List Message — Service Booking Menu</h3>
+  <div class="cb">
+    <div class="cb-head">
+      <span class="cb-lang">JS</span>
+      <span class="cb-file">src/messages/booking-menu.js</span>
+      <button class="cp-btn" onclick="cp(this)">copy</button>
+    </div>
+    <pre><span class="cm">/**
+ * List Message for clinic / service booking
+ * Use when options > 3 (Reply Buttons max is 3)
+ */</span>
+<span class="kw">async function</span> <span class="fn">sendBookingMenu</span>(<span class="vr">to</span>) {
+  <span class="kw">return</span> <span class="fn">sendMessage</span>({
+    <span class="vr">to</span>,
+    <span class="vr">type</span>: <span class="st">'interactive'</span>,
+    <span class="vr">interactive</span>: {
+      <span class="vr">type</span>: <span class="st">'list'</span>,
+      <span class="vr">body</span>:   { <span class="vr">text</span>: <span class="st">'مرحباً! اختر الخدمة التي تودّ حجزها:'</span> },
+      <span class="vr">action</span>: {
+        <span class="vr">button</span>: <span class="st">'عرض الخدمات'</span>,
+        <span class="vr">sections</span>: [
+          {
+            <span class="vr">title</span>: <span class="st">'العيادات المتاحة'</span>,
+            <span class="vr">rows</span>: [
+              { <span class="vr">id</span>: <span class="st">'book_general'</span>,  <span class="vr">title</span>: <span class="st">'طب عام'</span>,        <span class="vr">description</span>: <span class="st">'متاح اليوم'</span>   },
+              { <span class="vr">id</span>: <span class="st">'book_dental'</span>,   <span class="vr">title</span>: <span class="st">'أسنان'</span>,         <span class="vr">description</span>: <span class="st">'غداً من 9 ص'</span>  },
+              { <span class="vr">id</span>: <span class="st">'book_skin'</span>,     <span class="vr">title</span>: <span class="st">'جلدية'</span>,         <span class="vr">description</span>: <span class="st">'3 مواعيد متاحة'</span>},
+              { <span class="vr">id</span>: <span class="st">'book_womens'</span>,   <span class="vr">title</span>: <span class="st">'نساء وولادة'</span>,   <span class="vr">description</span>: <span class="st">'د. سارة فقط'</span>  },
+            ]
+          },
+          {
+            <span class="vr">title</span>: <span class="st">'أخرى'</span>,
+            <span class="vr">rows</span>: [
+              { <span class="vr">id</span>: <span class="st">'inquiry'</span>, <span class="vr">title</span>: <span class="st">'استفسار عام'</span>, <span class="vr">description</span>: <span class="st">'تحدث مع الفريق'</span> },
+            ]
+          }
+        ]
+      }
+    }
+  });
+}
+
+<span class="cm">/**
+ * Handle list selection
+ */</span>
+<span class="kw">async function</span> <span class="fn">handleInteractive</span>(<span class="vr">msg</span>) {
+  <span class="kw">const</span> <span class="vr">id</span> = <span class="vr">msg</span>.interactive.list_reply?.id
+           || <span class="vr">msg</span>.interactive.button_reply?.id;
+
+  <span class="kw">if</span> (<span class="vr">id</span>?.<span class="fn">startsWith</span>(<span class="st">'book_'</span>)) {
+    <span class="kw">const</span> <span class="vr">service</span> = <span class="vr">id</span>.<span class="fn">replace</span>(<span class="st">'book_'</span>, <span class="st">''</span>);
+    <span class="kw">await</span> <span class="fn">sendTimeSlots</span>(<span class="vr">msg</span>.from, <span class="vr">service</span>);
+  } <span class="kw">else if</span> (<span class="vr">id</span>?.<span class="fn">startsWith</span>(<span class="st">'confirm_'</span>)) {
+    <span class="kw">await</span> <span class="fn">confirmOrder</span>(<span class="vr">id</span>.<span class="fn">split</span>(<span class="st">'_'</span>)[<span class="nm">1</span>]);
+  }
+}</pre>
+  </div>
+
+  <div class="call warn">
+    <strong>Limits:</strong> Reply Buttons = max 3 options, title max 20 chars. List Messages = max 10 sections × 10 rows each, title max 24 chars. Use List when choices > 3.
+  </div>
+</section>
+
+<!-- BROADCAST -->
+<section id="broadcast">
+  <h2><span class="n">04 //</span> Broadcast Pipeline</h2>
+
+  <p>Broadcast is not bulk SMS. It's a segmented, template-gated, consent-based pipeline. Architectural mistakes here result in account suspension — not just poor delivery rates.</p>
+
+  <p>The commercial strategy — segmentation logic, Ramadan timing, win-back sequences, and conversion benchmarks for the Saudi market — is covered in depth in the Arabic guide: <a href="https://zidnitech.com/whatsapp-broadcast-marketing/">دليل WhatsApp Broadcast Marketing الكامل</a>.</p>
+
+  <h3>Broadcast Worker — Rate-Limited Dispatch</h3>
+  <div class="cb">
+    <div class="cb-head">
+      <span class="cb-lang">JS</span>
+      <span class="cb-file">src/workers/broadcast.worker.js</span>
+      <button class="cp-btn" onclick="cp(this)">copy</button>
+    </div>
+    <pre><span class="kw">const</span> <span class="nm">RATE_LIMIT</span>  = <span class="nm">80</span>;   <span class="cm">// messages per second (Tier-2 default)</span>
+<span class="kw">const</span> <span class="nm">COOLDOWN_MS</span> = <span class="nm">7</span> * <span class="nm">24</span> * <span class="nm">60</span> * <span class="nm">60</span> * <span class="nm">1000</span>; <span class="cm">// 7-day suppression</span>
+
+<span class="cm">/**
+ * Process a broadcast campaign batch
+ * Each contact: check consent + cooldown → send → log
+ */</span>
+<span class="kw">async function</span> <span class="fn">processBroadcastBatch</span>(<span class="vr">job</span>) {
+  <span class="kw">const</span> { <span class="vr">contacts</span>, <span class="vr">templateName</span>, <span class="vr">lang</span>, <span class="vr">campaignId</span> } = <span class="vr">job</span>.data;
+  <span class="kw">const</span> <span class="vr">results</span> = { <span class="vr">sent</span>: <span class="nm">0</span>, <span class="vr">skipped</span>: <span class="nm">0</span>, <span class="vr">failed</span>: <span class="nm">0</span> };
+  <span class="kw">const</span> <span class="vr">delay</span> = <span class="nm">1000</span> / <span class="nm">RATE_LIMIT</span>;
+
+  <span class="kw">for</span> (<span class="kw">const</span> <span class="vr">contact</span> <span class="kw">of</span> <span class="vr">contacts</span>) {
+    <span class="cm">// 1. Consent check</span>
+    <span class="kw">if</span> (!<span class="vr">contact</span>.marketingOptIn) { <span class="vr">results</span>.skipped++; <span class="kw">continue</span>; }
+
+    <span class="cm">// 2. Cooldown check (Redis)</span>
+    <span class="kw">const</span> <span class="vr">lastSent</span> = <span class="kw">await</span> <span class="vr">redis</span>.<span class="fn">get</span>(<span class="st">`promo:<span class="vr">${contact.phone}</span>`</span>);
+    <span class="kw">if</span> (<span class="vr">lastSent</span> && <span class="vr">Date</span>.<span class="fn">now</span>() - <span class="vr">lastSent</span> < <span class="nm">COOLDOWN_MS</span>) {
+      <span class="vr">results</span>.skipped++;
+      <span class="kw">continue</span>;
+    }
+
+    <span class="kw">try</span> {
+      <span class="cm">// 3. Send</span>
+      <span class="kw">await</span> <span class="fn">sendTemplate</span>(<span class="vr">contact</span>.phone, <span class="vr">templateName</span>, <span class="vr">lang</span>, <span class="fn">buildComponents</span>(<span class="vr">contact</span>));
+
+      <span class="cm">// 4. Log cooldown</span>
+      <span class="kw">await</span> <span class="vr">redis</span>.<span class="fn">set</span>(<span class="st">`promo:<span class="vr">${contact.phone}</span>`</span>, <span class="vr">Date</span>.<span class="fn">now</span>(), <span class="st">'EX'</span>, <span class="nm">604800</span>);
+      <span class="vr">results</span>.sent++;
+    } <span class="kw">catch</span> (<span class="vr">e</span>) {
+      <span class="vr">results</span>.failed++;
+      <span class="vr">logger</span>.<span class="fn">error</span>(<span class="st">'Broadcast send failed'</span>, { <span class="vr">phone</span>: <span class="vr">contact</span>.phone, <span class="vr">error</span>: <span class="vr">e</span>.message });
+    }
+
+    <span class="cm">// 5. Rate limit</span>
+    <span class="kw">await</span> <span class="fn">sleep</span>(<span class="vr">delay</span>);
+  }
+
+  <span class="kw">return</span> <span class="vr">results</span>;
+}</pre>
+  </div>
+
+  <div class="call info">
+    <strong>Tier limits:</strong> New numbers start at Tier-1 (1k messages/day). Tier-2 (10k/day) after quality rating stays Green for 7 days at Tier-1 volume. Never send to opted-out contacts — a single spam report spike can drop you to Tier-0 (blocked).
+  </div>
+</section>
+
+<!-- ZAPIER -->
+<section id="zapier">
+  <h2><span class="n">05 //</span> Zapier & Automation Flows</h2>
+
+  <p>For teams without dedicated engineering, Zapier is the integration layer that connects WhatsApp API to your CRM, store, calendar, and spreadsheets without custom code. For engineering teams, it serves as a rapid prototyping tool before building native integrations.</p>
+
+  <p>The complete business guide — 8 automation use cases with ROI data, comparison of Zapier vs Make vs n8n, and Saudi market-specific flows — is at: <a href="https://zidnitech.com/whatsapp-zapier-automation-no-code/">ربط WhatsApp API مع Zapier: كيف تحوّل واتساب إلى آلة مبيعات تعمل وحدها؟</a></p>
+
+  <h3>Zapier Webhook Trigger → WhatsApp Action</h3>
+
+  <div class="cb">
+    <div class="cb-head"><span class="cb-lang">FLOW</span></div>
+    <pre>
+  <span class="st">Trigger:</span>  New Order (Shopify / WooCommerce / Salla / Zid)
+      <span class="op">↓</span>
+  <span class="st">Filter:</span>   payment_method == "cod"
+      <span class="op">↓</span>
+  <span class="st">Action:</span>   Formatter → format phone to E.164 (966XXXXXXXXX)
+      <span class="op">↓</span>
+  <span class="st">Action:</span>   Wati → Send Template Message
+              template:   cod_confirmation_ar
+              to:         {{formatted_phone}}
+              params:     {{order_id}}, {{total}}, {{item_names}}
+      <span class="op">↓</span>
+  <span class="st">Action:</span>   HubSpot → Create/Update Contact
+              lifecycle_stage: customer
+              last_order_id:   {{order_id}}</pre>
+  </div>
+
+  <h3>Manual Trigger Endpoint (for Zapier's "Webhooks by Zapier")</h3>
+  <div class="cb">
+    <div class="cb-head">
+      <span class="cb-lang">JS</span>
+      <span class="cb-file">src/routes/trigger.js</span>
+      <button class="cp-btn" onclick="cp(this)">copy</button>
+    </div>
+    <pre><span class="cm">/**
+ * POST /trigger/:flowName
+ * Zapier calls this endpoint directly to fire any automation flow.
+ * Useful for external tools that can make HTTP requests but don't
+ * have a native WhatsApp integration.
+ */</span>
+<span class="vr">router</span>.<span class="fn">post</span>(<span class="st">'/trigger/:flowName'</span>, <span class="vr">authMiddleware</span>, <span class="kw">async</span> (<span class="vr">req</span>, <span class="vr">res</span>) => {
+  <span class="kw">const</span> { <span class="vr">flowName</span> } = <span class="vr">req</span>.params;
+  <span class="kw">const</span> <span class="vr">data</span> = <span class="vr">req</span>.body;
+
+  <span class="kw">const</span> <span class="vr">allowedFlows</span> = [
+    <span class="st">'cart_abandoned'</span>,
+    <span class="st">'appointment_reminder'</span>,
+    <span class="st">'payment_failed'</span>,
+    <span class="st">'lead_followup'</span>,
+    <span class="st">'review_request'</span>,
+  ];
+
+  <span class="kw">if</span> (!<span class="vr">allowedFlows</span>.<span class="fn">includes</span>(<span class="vr">flowName</span>)) {
+    <span class="kw">return</span> <span class="vr">res</span>.<span class="fn">status</span>(<span class="nm">400</span>).<span class="fn">json</span>({ <span class="vr">error</span>: <span class="st">'Unknown flow'</span> });
+  }
+
+  <span class="kw">const</span> <span class="vr">job</span> = <span class="kw">await</span> <span class="vr">queue</span>.<span class="fn">add</span>(<span class="vr">flowName</span>, <span class="vr">data</span>, {
+    <span class="vr">jobId</span>: <span class="st">`<span class="vr">${flowName}</span>-<span class="vr">${data.id || Date.now()}</span>`</span>
+  });
+
+  <span class="vr">res</span>.<span class="fn">json</span>({ <span class="vr">queued</span>: <span class="kw">true</span>, <span class="vr">jobId</span>: <span class="vr">job</span>.id });
+});</pre>
+  </div>
+
+  <h3>Automation Flows Quick Reference</h3>
+  <table>
+    <thead><tr><th>Flow</th><th>Trigger Source</th><th>Delay</th><th>Saudi Market ROI</th></tr></thead>
+    <tbody>
+      <tr><td><code>cart_abandoned</code></td><td>Store webhook</td><td>30 min</td><td>15–30% cart recovery</td></tr>
+      <tr><td><code>cod_confirmation</code></td><td>Order placed</td><td>0</td><td>Cancellation 20% → 8%</td></tr>
+      <tr><td><code>appointment_reminder</code></td><td>Calendar</td><td>24h + 1h before</td><td>No-show 35% → 8%</td></tr>
+      <tr><td><code>lead_followup</code></td><td>CRM / Form</td><td>60s</td><td>3× conversion vs 30min delay</td></tr>
+      <tr><td><code>payment_failed</code></td><td>Payment gateway</td><td>5 min</td><td>35–45% recovery</td></tr>
+      <tr><td><code>review_request</code></td><td>Delivery confirmed</td><td>48h</td><td>40–60% response rate</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- API REFERENCE -->
+<section id="api-ref">
+  <h2><span class="n">06 //</span> API Reference — Core Send Functions</h2>
+
+  <div class="ep">
+    <div class="ep-head">
+      <span class="method post">POST</span>
+      <span class="ep-path">/{phone_number_id}/messages</span>
+    </div>
+    <div class="ep-body">
+      Meta Cloud API base endpoint. All message sends go here — templates, interactive, media, text.
+      <br><br>
+      <strong>Auth:</strong> <code>Authorization: Bearer {WHATSAPP_TOKEN}</code><br>
+      <strong>Base URL:</strong> <code>https://graph.facebook.com/v19.0</code>
+    </div>
+  </div>
+
+  <div class="ep">
+    <div class="ep-head">
+      <span class="method get">GET</span>
+      <span class="ep-path">/health</span>
+    </div>
+    <div class="ep-body">Local health check — returns Redis connection status, queue depth, rate limit headroom.</div>
+  </div>
+
+  <div class="ep">
+    <div class="ep-head">
+      <span class="method post">POST</span>
+      <span class="ep-path">/trigger/:flowName</span>
+    </div>
+    <div class="ep-body">
+      Fire any automation flow manually. Used by Zapier, Make, and internal tools.<br><br>
+      <strong>Body:</strong> <code>{ "to": "966XXXXXXXXX", "id": "unique-ref", ...flow-specific-fields }</code>
+    </div>
+  </div>
+
+  <div class="ep">
+    <div class="ep-head">
+      <span class="method post">POST</span>
+      <span class="ep-path">/broadcast/campaign</span>
+    </div>
+    <div class="ep-body">
+      Enqueue a broadcast campaign. Accepts segment ID or contact array. Applies consent + cooldown checks before dispatch.<br><br>
+      <strong>Body:</strong> <code>{ "segmentId": "vip_customers", "templateName": "eid_offer_ar", "lang": "ar" }</code>
+    </div>
+  </div>
+</section>
+
+<!-- PATTERNS -->
+<section id="patterns">
+  <h2><span class="n">07 //</span> Common Patterns & Pitfalls</h2>
+
+  <h3>Pattern: Deduplication with Job IDs</h3>
+  <p>Store webhooks sometimes fire twice on retry. BullMQ's <code>jobId</code> prevents duplicate messages — if the job ID already exists in the queue, the duplicate is silently dropped.</p>
+  <div class="cb">
+    <div class="cb-head"><span class="cb-lang">JS</span><button class="cp-btn" onclick="cp(this)">copy</button></div>
+    <pre><span class="cm">// Always set jobId to a deterministic, event-unique value</span>
+<span class="kw">await</span> <span class="vr">queue</span>.<span class="fn">add</span>(<span class="st">'cod_confirmation'</span>, <span class="vr">data</span>, {
+  <span class="vr">jobId</span>: <span class="st">`cod-<span class="vr">${data.orderId}</span>`</span>   <span class="cm">// idempotent</span>
+});</pre>
+  </div>
+
+  <h3>Pattern: Phone Normalization (Saudi)</h3>
+  <div class="cb">
+    <div class="cb-head"><span class="cb-lang">JS</span><button class="cp-btn" onclick="cp(this)">copy</button></div>
+    <pre><span class="kw">function</span> <span class="fn">toE164Saudi</span>(<span class="vr">raw</span>) {
+  <span class="kw">const</span> <span class="vr">d</span> = <span class="vr">raw</span>.<span class="fn">replace</span>(<span class="st">/\D/g</span>, <span class="st">''</span>);
+  <span class="kw">if</span> (<span class="vr">d</span>.<span class="fn">startsWith</span>(<span class="st">'966'</span>))  <span class="kw">return</span> <span class="vr">d</span>;
+  <span class="kw">if</span> (<span class="vr">d</span>.<span class="fn">startsWith</span>(<span class="st">'05'</span>))   <span class="kw">return</span> <span class="st">'966'</span> + <span class="vr">d</span>.<span class="fn">slice</span>(<span class="nm">1</span>);
+  <span class="kw">if</span> (<span class="vr">d</span>.<span class="fn">startsWith</span>(<span class="st">'5'</span>))    <span class="kw">return</span> <span class="st">'966'</span> + <span class="vr">d</span>;
+  <span class="kw">return</span> <span class="kw">null</span>; <span class="cm">// unrecognized — do not send</span>
+}</pre>
+  </div>
+
+  <h3>Common Pitfalls</h3>
+  <table>
+    <thead><tr><th>Pitfall</th><th>Consequence</th><th>Fix</th></tr></thead>
+    <tbody>
+      <tr><td>No HMAC verification</td><td>Accepts forged payloads</td><td><code>verifyMetaSignature()</code> on every inbound</td></tr>
+      <tr><td>Sync webhook processing</td><td>Timeouts → Meta retries → duplicates</td><td>Ack 200 immediately, process async</td></tr>
+      <tr><td>No cooldown on broadcast</td><td>Spam reports → account suspension</td><td>7-day Redis suppression per phone</td></tr>
+      <tr><td>Unapproved templates</td><td>Messages silently fail to send</td><td>Pre-approve all templates before flow launch</td></tr>
+      <tr><td>Non-E.164 phone format</td><td>API 400 error, message not sent</td><td><code>toE164Saudi()</code> before every send</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ARABIC DOCS -->
+<section id="resources">
+  <h2><span class="n">08 //</span> Arabic Business Documentation</h2>
+
+  <p>This codebase is production-tested in the <strong>Saudi Arabian and broader Middle East market</strong>. The following Arabic-language resources cover the commercial strategy, ROI analysis, and business logic behind each technical component. If you're building for MENA clients or operating in the region, these guides answer the "why" and "what to build" — this page answers the "how".</p>
+
+  <div class="call info">
+    <strong>For developers building for MENA clients:</strong> The Arabic guides contain market-specific data — COD cancellation rates, no-show benchmarks, Ramadan campaign timing, and conversion rates from live Saudi deployments — that is not available in generic international documentation.
+  </div>
+
+  <div class="card-grid">
+    <a href="https://zidnitech.com/webhook-integration-whatsapp-api/" target="_blank" rel="noopener" class="card">
+      <div class="card-tag">Webhooks & Integration</div>
+      <div class="card-title">ما هو Webhook والـ Integration؟ وكيف يربطان واتساب بأنظمتك تلقائياً؟</div>
+      <div class="card-desc">Business-layer explanation of webhook architecture — event flow, real-world triggers, ROI data from Saudi SMBs, and no-code vs developer paths.</div>
+      <div class="card-arrow">Read Arabic guide →</div>
+    </a>
+
+    <a href="https://zidnitech.com/whatsapp-reply-buttons-vs-list-messages/" target="_blank" rel="noopener" class="card">
+      <div class="card-tag">Interactive Messages</div>
+      <div class="card-title">الأزرار التفاعلية في واتساب: List Messages و Reply Buttons وأثرهم على المبيعات</div>
+      <div class="card-desc">A/B data, conversion rate comparisons, and use-case mapping for Reply Buttons vs List Messages across e-commerce, clinics, and real estate.</div>
+      <div class="card-arrow">Read Arabic guide →</div>
+    </a>
+
+    <a href="https://zidnitech.com/whatsapp-broadcast-marketing/" target="_blank" rel="noopener" class="card">
+      <div class="card-tag">Broadcast Campaigns</div>
+      <div class="card-title">دليل WhatsApp Broadcast Marketing الكامل</div>
+      <div class="card-desc">Segmentation strategy, Ramadan campaign timing, consent collection, win-back sequences, and anti-spam practices for the Saudi market.</div>
+      <div class="card-arrow">Read Arabic guide →</div>
+    </a>
+
+    <a href="https://zidnitech.com/whatsapp-zapier-automation-no-code/" target="_blank" rel="noopener" class="card">
+      <div class="card-tag">Automation Flows</div>
+      <div class="card-title">ربط WhatsApp API مع Zapier: كيف تحوّل واتساب إلى آلة مبيعات تعمل وحدها؟</div>
+      <div class="card-desc">8 automation flows with ROI estimates, Zapier vs Make vs n8n comparison, and step-by-step implementation for the Saudi e-commerce and services market.</div>
+      <div class="card-arrow">Read Arabic guide →</div>
+    </a>
+  </div>
+</section>
+
+</div>
+
+<footer>
+  <p>MIT License · <a href="https://zidnitech.com" target="_blank" rel="noopener">zidnitech.com</a> · Built for production use in Saudi Arabia and the Middle East</p>
+  <p style="margin-top:8px; font-size:11px; color:var(--text3);">WhatsApp Cloud API v19 · Node.js 20+ · BullMQ · Redis · Express</p>
+</footer>
+
+<script>
+function cp(btn) {
+  const pre = btn.closest('.cb').querySelector('pre');
+  navigator.clipboard.writeText(pre.innerText).then(() => {
+    btn.textContent = 'copied!';
+    btn.style.color = 'var(--green)';
+    setTimeout(() => { btn.textContent = 'copy'; btn.style.color = ''; }, 2000);
+  });
+}
+</script>
+</body>
+</html>
