@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>whatsapp-catalog-sheets-sync — Developer Reference</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; }
+
+:root {
+  --bg:      #0a0e14;
+  --bg2:     #10151d;
+  --bg3:     #161c26;
+  --surface: #1a212c;
+  --border:  #232c39;
+  --border2: #2e3a4a;
+  --teal:    #2dd4bf;
+  --teal2:   #5eead4;
+  --amber:   #fbbf24;
+  --rose:    #fb7185;
+  --violet:  #a78bfa;
+  --blue:    #60a5fa;
+  --text:    #dce4ed;
+  --text2:   #8895a7;
+  --text3:   #4a5568;
+  --mono:    'JetBrains Mono', monospace;
+  --disp:    'Space Grotesk', sans-serif;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 13.5px;
+  line-height: 1.75;
+}
+
+.wrap { max-width: 980px; margin:0 auto; padding: 0 24px 100px; }
+
+/* HEADER */
+header { padding: 46px 0 32px; border-bottom: 1px solid var(--border); }
+.crumb { font-size: 12px; color: var(--text3); margin-bottom: 14px; }
+.crumb .org { color: var(--teal2); }
+.crumb .sep { color: var(--border2); margin: 0 6px; }
+
+h1.title {
+  font-family: var(--disp);
+  font-size: clamp(24px, 3.5vw, 36px);
+  font-weight: 700;
+  color: #fff;
+  line-height: 1.2;
+  margin-bottom: 12px;
+}
+h1.title .accent { color: var(--teal2); }
+
+.subtitle { color: var(--text2); font-size: 14px; max-width: 680px; margin-bottom: 20px; }
+
+.badges { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 24px; }
+.badge { font-size: 11px; padding: 3px 11px; border-radius: 20px; border: 1px solid; font-family: var(--mono); }
+.b-teal   { color: var(--teal2); border-color: rgba(45,212,191,.35); background: rgba(45,212,191,.07); }
+.b-amber  { color: var(--amber); border-color: rgba(251,191,36,.35); background: rgba(251,191,36,.07); }
+.b-violet { color: var(--violet);border-color: rgba(167,139,250,.35);background: rgba(167,139,250,.07); }
+.b-rose   { color: var(--rose);  border-color: rgba(251,113,133,.35);background: rgba(251,113,133,.07); }
+.b-blue   { color: var(--blue);  border-color: rgba(96,165,250,.35); background: rgba(96,165,250,.07); }
+
+.stack-line { font-size: 12px; color: var(--text3); }
+
+/* NAV */
+nav { position: sticky; top:0; z-index: 99; background: rgba(10,14,20,.92); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); }
+nav .inner { display:flex; overflow-x:auto; }
+nav a { color: var(--text3); text-decoration:none; padding: 12px 16px; font-size: 12px; white-space:nowrap; border-bottom: 2px solid transparent; transition: .15s; }
+nav a:hover { color: var(--teal2); border-bottom-color: var(--teal2); }
+
+/* SECTIONS */
+section { padding: 48px 0; border-bottom: 1px solid var(--border); }
+section:last-of-type { border-bottom: none; }
+
+h2 { font-family: var(--disp); font-size: 19px; font-weight: 700; color: #fff; margin-bottom: 16px; display:flex; align-items:center; gap: 10px; }
+h2 .tag { font-size: 11px; color: var(--text3); font-family: var(--mono); font-weight: 400; }
+h3 { font-family: var(--disp); font-size: 14.5px; font-weight: 600; color: var(--teal2); margin: 26px 0 10px; }
+
+p { color: var(--text2); margin-bottom: 13px; line-height: 1.8; }
+p strong { color: var(--text); font-weight: 500; }
+a { color: var(--teal2); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* CODE */
+.cb { background: var(--bg2); border: 1px solid var(--border); border-radius: 7px; margin: 16px 0; overflow: hidden; }
+.cb-head { background: var(--bg3); border-bottom: 1px solid var(--border); padding: 9px 16px; display:flex; align-items:center; justify-content: space-between; font-size: 11px; }
+.cb-lang { color: var(--teal2); text-transform: uppercase; letter-spacing: .06em; }
+.cb-file { color: var(--text3); }
+.cp { background: transparent; border: 1px solid var(--border); color: var(--text3); padding: 2px 9px; border-radius: 4px; font-size: 11px; font-family: var(--mono); cursor:pointer; transition:.15s; }
+.cp:hover { color: var(--teal2); border-color: var(--teal2); }
+pre { padding: 17px 19px; overflow-x: auto; font-size: 12.5px; line-height: 1.65; }
+
+.kw { color: #c792ea; }
+.st { color: #c3e88d; }
+.cm { color: var(--text3); font-style: italic; }
+.fn { color: #82aaff; }
+.vr { color: var(--teal2); }
+.nm { color: var(--amber); }
+
+code { font-family: var(--mono); font-size: 12px; color: var(--amber); background: rgba(251,191,36,.1); padding: 1px 6px; border-radius: 3px; }
+
+/* TABLES */
+table { width:100%; border-collapse: collapse; margin: 16px 0; font-size: 12.5px; }
+th { background: var(--bg3); color: var(--text2); text-align:left; padding: 9px 14px; border-bottom: 1px solid var(--border2); font-size: 11px; text-transform: uppercase; letter-spacing: .05em; font-weight: 500; }
+td { padding: 9px 14px; border-bottom: 1px solid var(--border); color: var(--text2); vertical-align: top; }
+tr:last-child td { border-bottom: none; }
+td code { font-size: 11.5px; }
+
+/* CALLOUT */
+.call { border-left: 3px solid; padding: 13px 17px; border-radius: 0 5px 5px 0; margin: 16px 0; font-size: 13px; }
+.call.info { border-color: var(--blue); background: rgba(96,165,250,.06); color: var(--text2); }
+.call.warn { border-color: var(--amber); background: rgba(251,191,36,.06); color: var(--text2); }
+.call.tip  { border-color: var(--teal); background: rgba(45,212,191,.06); color: var(--text2); }
+.call strong { color: var(--text); }
+
+/* ENDPOINT */
+.ep { background: var(--bg2); border: 1px solid var(--border); border-radius: 7px; margin: 14px 0; overflow: hidden; }
+.ep-head { padding: 11px 16px; display:flex; align-items:center; gap:12px; border-bottom: 1px solid var(--border); background: var(--bg3); }
+.method { font-size: 11px; font-weight: 700; padding: 2px 9px; border-radius: 4px; text-transform: uppercase; letter-spacing: .05em; }
+.post { background: rgba(45,212,191,.13); color: var(--teal2); border: 1px solid rgba(45,212,191,.3); }
+.get  { background: rgba(96,165,250,.1); color: var(--blue); border: 1px solid rgba(96,165,250,.25); }
+.put  { background: rgba(251,191,36,.1); color: var(--amber); border: 1px solid rgba(251,191,36,.25); }
+.ep-path { color: var(--text); font-size: 13px; }
+.ep-body { padding: 14px 16px; font-size: 13px; color: var(--text2); }
+
+ul, ol { padding-left: 20px; margin: 10px 0 14px; }
+li { color: var(--text2); margin: 5px 0; }
+li strong { color: var(--text); }
+
+/* RESOURCE CARDS */
+.card-grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(270px,1fr)); gap: 13px; margin-top: 18px; }
+.card { background: var(--bg2); border: 1px solid var(--border); border-radius: 7px; padding: 18px; text-decoration:none; display:block; position:relative; overflow:hidden; transition:.2s; }
+.card::before { content:''; position:absolute; top:0; left:0; width:3px; height:100%; background: var(--teal2); opacity:0; transition:.2s; }
+.card:hover { border-color: var(--border2); transform: translateY(-2px); }
+.card:hover::before { opacity:1; }
+.card-tag { font-size:10px; text-transform:uppercase; letter-spacing:.09em; color: var(--teal2); margin-bottom:7px; }
+.card-title { color: var(--text); font-size: 13px; margin-bottom:7px; line-height:1.45; font-family: var(--disp); font-weight:600; }
+.card-desc { color: var(--text3); font-size: 11.5px; line-height:1.6; }
+.card-arrow { color: var(--teal2); margin-top:12px; font-size:11.5px; }
+
+footer { padding: 36px 0; border-top: 1px solid var(--border); font-size: 12px; color: var(--text3); text-align:center; }
+footer a { color: var(--teal2); }
+
+@media(max-width:600px){ nav .inner { padding:0 4px; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="crumb"><span class="org">zidnitech</span><span class="sep">/</span>whatsapp-catalog-sheets-sync</div>
+  <h1 class="title">WhatsApp Catalog API <span class="accent">+ Google Sheets Sync</span></h1>
+  <p class="subtitle">Developer reference for syncing a live product catalog to WhatsApp Commerce, sending catalog messages, handling order webhooks, and keeping inventory in lockstep with a Google Sheet — no database required for small-to-mid catalogs.</p>
+  <div class="badges">
+    <span class="badge b-teal">Meta Graph API v19</span>
+    <span class="badge b-blue">Node.js 20+</span>
+    <span class="badge b-amber">Google Sheets API v4</span>
+    <span class="badge b-violet">WhatsApp Commerce</span>
+    <span class="badge b-rose">Webhooks</span>
+  </div>
+  <div class="stack-line">⚡ Catalog sync · 🛒 Cart webhooks · 📊 Sheets as lightweight inventory DB · 🇸🇦 Saudi market reference data</div>
+</header>
+
+<nav>
+  <div class="inner">
+    <a href="#overview">Overview</a>
+    <a href="#catalog-setup">Catalog Setup</a>
+    <a href="#catalog-messages">Catalog Messages</a>
+    <a href="#sheets-sync">Sheets Sync</a>
+    <a href="#order-webhooks">Order Webhooks</a>
+    <a href="#api-ref">API Reference</a>
+    <a href="#choosing-platform">Choosing a Platform</a>
+    <a href="#resources">Arabic Docs</a>
+  </div>
+</nav>
+
+<!-- OVERVIEW -->
+<section id="overview">
+  <h2><span class="tag">01 //</span> Overview</h2>
+  <p>This reference covers two systems wired together: the <strong>WhatsApp Catalog API</strong>, which lets customers browse and order products inside a chat thread, and a <strong>Google Sheets sync layer</strong> that keeps stock, pricing, and availability current without requiring a full database for smaller catalogs.</p>
+
+  <div class="cb">
+    <div class="cb-head"><span class="cb-lang">ARCHITECTURE</span></div>
+    <pre>
+  <span class="cm">┌──────────────────────┐         ┌──────────────────────┐</span>
+  <span class="cm">│   Google Sheet       │ ◄─────► │  Sync Worker (cron)  │</span>
+  <span class="cm">│  (products, stock,   │  pull/  │  every 15 min         │</span>
+  <span class="cm">│   prices, SKUs)      │  push   │                       │</span>
+  <span class="cm">└──────────────────────┘         └──────────┬───────────┘</span>
+                                                <span class="cm">│</span>
+                                       <span class="vr">Meta Commerce Manager</span>
+                                       <span class="cm">(Catalog Batch API)</span>
+                                                <span class="cm">│</span>
+                                                <span class="cm">▼</span>
+  <span class="cm">┌─────────────────────────────────────────────────────────┐</span>
+  <span class="cm">│              WhatsApp Catalog (customer-facing)          │</span>
+  <span class="cm">│   Browse → Add to cart → Send order → Webhook fires      │</span>
+  <span class="cm">└──────────────────────┬────────────────────────────────────┘</span>
+                          <span class="cm">│</span>
+                          <span class="cm">▼</span>
+  <span class="cm">┌──────────────────────┐</span>
+  <span class="cm">│  Order Webhook        │ ──► decrement stock in Sheet</span>
+  <span class="cm">│  Handler              │ ──► notify staff / CRM</span>
+  <span class="cm">└──────────────────────┘</span></pre>
+  </div>
+
+  <div class="call info">
+    <strong>Why Sheets instead of a database?</strong> For catalogs under ~2,000 SKUs, a Sheet gives non-technical staff direct edit access (update price, mark out-of-stock) without touching code or an admin panel. Migrate to a real DB once you need transactional consistency at higher volume.
+  </div>
+</section>
+
+<!-- CATALOG SETUP -->
+<section id="catalog-setup">
+  <h2><span class="tag">02 //</span> Catalog Setup (Meta Commerce Manager)</h2>
+  <p>Before any code runs, the catalog must exist in Meta Commerce Manager and be connected to your WhatsApp Business Account (WABA).</p>
+
+  <h3>Step 1 — Create the catalog</h3>
+  <ol>
+    <li>Meta Commerce Manager → <strong>Create Catalog</strong> → type: <code>E-commerce</code></li>
+    <li>Connect catalog to your WABA under <strong>Business Settings → WhatsApp Accounts</strong></li>
+    <li>Note the <code>catalog_id</code> — needed for every API call below</li>
+  </ol>
+
+  <h3>Step 2 — Authenticate</h3>
+  <div class="cb">
+    <div class="cb-head"><span class="cb-lang">ENV</span><span class="cb-file">.env</span><button class="cp" onclick="cp(this)">copy</button></div>
+    <pre><span class="vr">META_ACCESS_TOKEN</span>=<span class="st">your_system_user_token</span>
+<span class="vr">CATALOG_ID</span>=<span class="st">your_catalog_id</span>
+<span class="vr">WABA_PHONE_NUMBER_ID</span>=<span class="st">your_phone_number_id</span>
+<span class="vr">GOOGLE_SHEET_ID</span>=<span class="st">your_sheet_id</span>
+<span class="vr">GOOGLE_SERVICE_ACCOUNT_JSON</span>=<span class="st">./service-account.json</span></pre>
+  </div>
+
+  <h3>Step 3 — Upload products via Batch API</h3>
+  <div class="cb">
+    <div class="cb-head"><span class="cb-lang">JS</span><span class="cb-file">src/catalog/upload.js</span><button class="cp" onclick="cp(this)">copy</button></div>
+    <pre><span class="kw">const</span> <span class="vr">axios</span> = <span class="fn">require</span>(<span class="st">'axios'</span>);
+
+<span class="cm">/**
+ * Push a batch of products to Meta's Catalog using the
+ * Product Feed Batch API. Accepts up to 5,000 items per call.
+ */</span>
+<span class="kw">async function</span> <span class="fn">uploadProductBatch</span>(<span class="vr">products</span>) {
+  <span class="kw">const</span> <span class="vr">requests</span> = <span class="vr">products</span>.<span class="fn">map</span>(<span class="vr">p</span> => ({
+    <span class="vr">method</span>: <span class="st">'UPDATE'</span>,
+    <span class="vr">retailer_id</span>: <span class="vr">p</span>.sku,
+    <span class="vr">data</span>: {
+      <span class="vr">name</span>: <span class="vr">p</span>.name,
+      <span class="vr">description</span>: <span class="vr">p</span>.description,
+      <span class="vr">availability</span>: <span class="vr">p</span>.stock > <span class="nm">0</span> ? <span class="st">'in stock'</span> : <span class="st">'out of stock'</span>,
+      <span class="vr">condition</span>: <span class="st">'new'</span>,
+      <span class="vr">price</span>: <span class="st">`<span class="vr">${p.price}</span> SAR`</span>,
+      <span class="vr">currency</span>: <span class="st">'SAR'</span>,
+      <span class="vr">image_link</span>: <span class="vr">p</span>.imageUrl,
+      <span class="vr">link</span>: <span class="vr">p</span>.productUrl,
+      <span class="vr">brand</span>: <span class="vr">p</span>.brand || <span class="st">'Generic'</span>,
+    }
+  }));
+
+  <span class="kw">const</span> { <span class="vr">data</span> } = <span class="kw">await</span> <span class="vr">axios</span>.<span class="fn">post</span>(
+    <span class="st">`https://graph.facebook.com/v19.0/<span class="vr">${process.env.CATALOG_ID}</span>/batch`</span>,
+    { <span class="vr">requests</span> },
+    { <span class="vr">headers</span>: { <span class="vr">Authorization</span>: <span class="st">`Bearer <span class="vr">${process.env.META_ACCESS_TOKEN}</span>`</span> } }
+  );
+
+  <span class="kw">return</span> <span class="vr">data</span>.<span class="vr">handles</span>; <span class="cm">// track batch processing status</span>
+}
+
+<span class="vr">module</span>.exports = { <span class="vr">uploadProductBatch</span> };</pre>
+  </div>
+
+  <div class="call warn">
+    <strong>Required fields:</strong> <code>retailer_id</code> (your SKU, must be unique and stable — never reuse), <code>price</code>, <code>availability</code>, and <code>image_link</code> (must be a public HTTPS URL, no auth wall). Missing any of these silently rejects the item from sync.
+  </div>
+</section>
+
+<!-- CATALOG MESSAGES -->
+<section id="catalog-messages">
+  <h2><span class="tag">03 //</span> Sending Catalog Messages</h2>
+  <p>Once products exist in the catalog, you can send them directly inside a WhatsApp conversation — either as a single product, a curated multi-product set, or the full browsable catalog.</p>
+
+  <h3>Single Product Message</h3>
+  <div class="cb">
+    <div class="cb-head"><span class="cb-lang">JS</span><span class="cb-file">src/messages/sendProduct.js</span><button class="cp" onclick="cp(this)">copy</button></div>
+    <pre><span class="kw">async function</span> <span class="fn">sendSingleProduct</span>(<span class="vr">to</span>, <span class="vr">retailerId</span>) {
+  <span class="kw">return</span> <span class="fn">sendMessage</span>({
+    <span class="vr">to</span>,
+    <span class="vr">type</span>: <span class="st">'interactive'</span>,
+    <span class="vr">interactive</span>: {
+      <span class="vr">type</span>: <span class="st">'product'</span>,
+      <span class="vr">body</span>: { <span class="vr">text</span>: <span class="st">'هذا هو المنتج الذي سألت عنه 👇'</span> },
+      <span class="vr">action</span>: {
+        <span class="vr">catalog_id</span>: <span class="vr">process</span>.env.CATALOG_ID,
+        <span class="vr">product_retailer_id</span>: <span class="vr">retailerId</span> <span class="cm">// e.g. "SKU-1042"</span>
+      }
+    }
+  });
+}</pre>
+  </div>
+
+  <h3>Multi-Product Message (curated set)</h3>
+  <div class="cb">
+    <div class="cb-head"><span class="cb-lang">JS</span><span class="cb-file">src/messages/sendProductSet.js</span><button class="cp" onclick="cp(this)">copy</button></div>
+    <pre><span class="kw">async function</span> <span class="fn">sendProductSet</span>(<span class="vr">to</span>, <span class="vr">retailerIds</span>, <span class="vr">sectionTitle</span> = <span class="st">'مقترحاتنا لك'</span>) {
+  <span class="kw">return</span> <span class="fn">sendMessage</span>({
+    <span class="vr">to</span>,
+    <span class="vr">type</span>: <span class="st">'interactive'</span>,
+    <span class="vr">interactive</span>: {
+      <span class="vr">type</span>: <span class="st">'product_list'</span>,
+      <span class="vr">header</span>: { <span class="vr">type</span>: <span class="st">'text'</span>, <span class="vr">text</span>: <span class="st">'منتجات مختارة'</span> },
+      <span class="vr">body</span>:   { <span class="vr">text</span>: <span class="st">'بناءً على طلبك، هذه أفضل الخيارات:'</span> },
+      <span class="vr">action</span>: {
+        <span class="vr">catalog_id</span>: <span class="vr">process</span>.env.CATALOG_ID,
+        <span class="vr">sections</span>: [{
+          <span class="vr">title</span>: <span class="vr">sectionTitle</span>,
+          <span class="vr">product_items</span>: <span class="vr">retailerIds</span>.<span class="fn">map</span>(<span class="vr">id</span> => ({ <span class="vr">product_retailer_id</span>: <span class="vr">id</span> }))
+        }]
+      }
+    }
+  });
+}</pre>
+  </div>
+
+  <h3>Full Catalog (browse everything)</h3>
+  <div class="cb">
+    <div class="cb-head"><span class="cb-lang">JS</span><button class="cp" onclick="cp(this)">copy</button></div>
+    <pre><span class="kw">async function</span> <span class="fn">sendFullCatalog</span>(<span class="vr">to</span>) {
+  <span class="kw">return</span> <span class="fn">sendMessage</span>({
+    <span class="vr">to</span>,
+    <span class="vr">type</span>: <span class="st">'interactive'</span>,
+    <span class="vr">interactive</span>: {
+      <span class="vr">type</span>: <span class="st">'catalog_message'</span>,
+      <span class="vr">body</span>: { <span class="vr">text</span>: <span class="st">'تصفّح كتالوجنا الكامل 🛍️'</span> },
+      <span class="vr">action</span>: { <span class="vr">name</span>: <span class="st">'catalog_message'</span> }
+    }
+  });
+}</pre>
+  </div>
+</section>
+
+<!-- SHEETS SYNC -->
+<section id="sheets-sync">
+  <h2><span class="tag">04 //</span> Google Sheets Sync Layer</h2>
+  <p>The Sheet acts as the source of truth for stock and pricing. A scheduled worker reads it, diffs against the last known state, and pushes only the changed rows to Meta — keeping API calls minimal.</p>
+
+  <h3>Expected Sheet Structure</h3>
+  <table>
+    <thead><tr><th>Column</th><th>Field</th><th>Example</th></tr></thead>
+    <tbody>
+      <tr><td>A</td><td><code>sku</code></td><td>SKU-1042</td></tr>
+      <tr><td>B</td><td><code>name</code></td><td>سماعة لاسلكية X200</td></tr>
+      <tr><td>C</td><td><code>price</code></td><td>249</td></tr>
+      <tr><td>D</td><td><code>stock</code></td><td>18</td></tr>
+      <tr><td>E</td><td><code>image_url</code></td><td>https://...jpg</td></tr>
+      <tr><td>F</td><td><code>product_url</code></td><td>https://store.com/p/1042</td></tr>
+      <tr><td>G</td><td><code>last_synced</code></td><td>auto-filled by worker</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Read + Diff + Push</h3>
+  <div class="cb">
+    <div class="cb-head"><span class="cb-lang">JS</span><span class="cb-file">src/sync/sheetSync.js</span><button class="cp" onclick="cp(this)">copy</button></div>
+    <pre><span class="kw">const</span> { <span class="vr">google</span> } = <span class="fn">require</span>(<span class="st">'googleapis'</span>);
+<span class="kw">const</span> { <span class="vr">uploadProductBatch</span> } = <span class="fn">require</span>(<span class="st">'../catalog/upload'</span>);
+
+<span class="kw">const</span> <span class="vr">auth</span> = <span class="kw">new</span> <span class="vr">google</span>.<span class="fn">auth</span>.<span class="fn">GoogleAuth</span>({
+  <span class="vr">keyFile</span>: <span class="vr">process</span>.env.GOOGLE_SERVICE_ACCOUNT_JSON,
+  <span class="vr">scopes</span>: [<span class="st">'https://www.googleapis.com/auth/spreadsheets'</span>]
+});
+
+<span class="kw">async function</span> <span class="fn">syncFromSheet</span>() {
+  <span class="kw">const</span> <span class="vr">sheets</span> = <span class="vr">google</span>.<span class="fn">sheets</span>({ <span class="vr">version</span>: <span class="st">'v4'</span>, <span class="vr">auth</span> });
+
+  <span class="kw">const</span> { <span class="vr">data</span> } = <span class="kw">await</span> <span class="vr">sheets</span>.spreadsheets.values.<span class="fn">get</span>({
+    <span class="vr">spreadsheetId</span>: <span class="vr">process</span>.env.GOOGLE_SHEET_ID,
+    <span class="vr">range</span>: <span class="st">'Products!A2:F'</span>, <span class="cm">// skip header row</span>
+  });
+
+  <span class="kw">const</span> <span class="vr">rows</span> = <span class="vr">data</span>.values || [];
+  <span class="kw">const</span> <span class="vr">products</span> = <span class="vr">rows</span>.<span class="fn">map</span>(<span class="vr">r</span> => ({
+    <span class="vr">sku</span>: <span class="vr">r</span>[<span class="nm">0</span>],
+    <span class="vr">name</span>: <span class="vr">r</span>[<span class="nm">1</span>],
+    <span class="vr">price</span>: <span class="fn">parseFloat</span>(<span class="vr">r</span>[<span class="nm">2</span>]) || <span class="nm">0</span>,
+    <span class="vr">stock</span>: <span class="fn">parseInt</span>(<span class="vr">r</span>[<span class="nm">3</span>]) || <span class="nm">0</span>,
+    <span class="vr">imageUrl</span>: <span class="vr">r</span>[<span class="nm">4</span>],
+    <span class="vr">productUrl</span>: <span class="vr">r</span>[<span class="nm">5</span>],
+  }));
+
+  <span class="cm">// Only push rows that changed since last sync (cheap in-memory diff)</span>
+  <span class="kw">const</span> <span class="vr">changed</span> = <span class="kw">await</span> <span class="fn">diffAgainstCache</span>(<span class="vr">products</span>);
+  <span class="kw">if</span> (<span class="vr">changed</span>.length === <span class="nm">0</span>) <span class="kw">return</span> { <span class="vr">updated</span>: <span class="nm">0</span> };
+
+  <span class="kw">await</span> <span class="fn">uploadProductBatch</span>(<span class="vr">changed</span>);
+  <span class="kw">await</span> <span class="fn">saveCache</span>(<span class="vr">products</span>);
+
+  <span class="kw">return</span> { <span class="vr">updated</span>: <span class="vr">changed</span>.length };
+}
+
+<span class="cm">// Run every 15 minutes</span>
+<span class="kw">const</span> <span class="vr">cron</span> = <span class="fn">require</span>(<span class="st">'node-cron'</span>);
+<span class="vr">cron</span>.<span class="fn">schedule</span>(<span class="st">'*/15 * * * *'</span>, <span class="fn">syncFromSheet</span>);</pre>
+  </div>
+
+  <div class="call tip">
+    <strong>Why diff before pushing?</strong> Meta's Batch API has rate limits per app. Pushing all 2,000 rows every 15 minutes when only 3 changed wastes quota fast. The diff-cache pattern keeps you well under limits even on large catalogs.
+  </div>
+</section>
+
+<!-- ORDER WEBHOOKS -->
+<section id="order-webhooks">
+  <h2><span class="tag">05 //</span> Order Webhooks (Cart → Sheet)</h2>
+  <p>When a customer completes a cart inside WhatsApp, Meta sends an <code>order</code> message type to your webhook. This handler decrements stock back in the Sheet and notifies staff.</p>
+
+  <div class="cb">
+    <div class="cb-head"><span class="cb-lang">JS</span><span class="cb-file">src/webhooks/order.js</span><button class="cp" onclick="cp(this)">copy</button></div>
+    <pre><span class="kw">async function</span> <span class="fn">handleOrderMessage</span>(<span class="vr">msg</span>, <span class="vr">contact</span>) {
+  <span class="kw">const</span> <span class="vr">order</span> = <span class="vr">msg</span>.order; <span class="cm">// { catalog_id, product_items: [{product_retailer_id, quantity, item_price}] }</span>
+
+  <span class="kw">const</span> <span class="vr">sheets</span> = <span class="vr">google</span>.<span class="fn">sheets</span>({ <span class="vr">version</span>: <span class="st">'v4'</span>, <span class="vr">auth</span> });
+  <span class="kw">const</span> <span class="vr">rowMap</span> = <span class="kw">await</span> <span class="fn">getSkuRowMap</span>(); <span class="cm">// sku -> row number, cached</span>
+
+  <span class="kw">for</span> (<span class="kw">const</span> <span class="vr">item</span> <span class="kw">of</span> <span class="vr">order</span>.product_items) {
+    <span class="kw">const</span> <span class="vr">row</span> = <span class="vr">rowMap</span>[<span class="vr">item</span>.product_retailer_id];
+    <span class="kw">if</span> (!<span class="vr">row</span>) <span class="kw">continue</span>;
+
+    <span class="kw">await</span> <span class="vr">sheets</span>.spreadsheets.values.<span class="fn">update</span>({
+      <span class="vr">spreadsheetId</span>: <span class="vr">process</span>.env.GOOGLE_SHEET_ID,
+      <span class="vr">range</span>: <span class="st">`Products!D<span class="vr">${row}</span>`</span>, <span class="cm">// stock column</span>
+      <span class="vr">valueInputOption</span>: <span class="st">'USER_ENTERED'</span>,
+      <span class="vr">requestBody</span>: { <span class="vr">values</span>: [[<span class="st">`=D<span class="vr">${row}</span>-<span class="vr">${item.quantity}</span>`</span>]] }
+    });
+  }
+
+  <span class="kw">await</span> <span class="fn">notifyStaff</span>({
+    <span class="vr">customer</span>: <span class="vr">contact</span>.profile.name,
+    <span class="vr">phone</span>: <span class="vr">contact</span>.wa_id,
+    <span class="vr">items</span>: <span class="vr">order</span>.product_items,
+    <span class="vr">total</span>: <span class="vr">order</span>.product_items.<span class="fn">reduce</span>((<span class="vr">sum</span>, <span class="vr">i</span>) => <span class="vr">sum</span> + <span class="vr">i</span>.item_price * <span class="vr">i</span>.quantity, <span class="nm">0</span>)
+  });
+
+  <span class="kw">await</span> <span class="fn">sendOrderConfirmation</span>(<span class="vr">contact</span>.wa_id, <span class="vr">order</span>);
+}</pre>
+  </div>
+
+  <div class="call warn">
+    <strong>Race condition note:</strong> Two simultaneous orders for the last unit of a low-stock item can both succeed before the Sheet updates. For high-demand SKUs, add a stock check + soft-lock before confirming the order, not just after.
+  </div>
+</section>
+
+<!-- API REFERENCE -->
+<section id="api-ref">
+  <h2><span class="tag">06 //</span> API Reference</h2>
+
+  <div class="ep">
+    <div class="ep-head"><span class="method post">POST</span><span class="ep-path">/{catalog_id}/batch</span></div>
+    <div class="ep-body">Bulk create/update/delete catalog items. Max 5,000 requests per call. Returns a <code>handles</code> array for tracking async processing status.</div>
+  </div>
+
+  <div class="ep">
+    <div class="ep-head"><span class="method get">GET</span><span class="ep-path">/{catalog_id}/products</span></div>
+    <div class="ep-body">List all products in a catalog with pagination. Useful for periodic full-state reconciliation against the Sheet.</div>
+  </div>
+
+  <div class="ep">
+    <div class="ep-head"><span class="method post">POST</span><span class="ep-path">/{phone_number_id}/messages</span></div>
+    <div class="ep-body">Send catalog, product, or product_list interactive messages. Same endpoint used for all WhatsApp message types.</div>
+  </div>
+
+  <div class="ep">
+    <div class="ep-head"><span class="method put">PUT</span><span class="ep-path">Products!D{row}</span></div>
+    <div class="ep-body">Sheets API value update — used internally by the order webhook handler to decrement stock by row reference.</div>
+  </div>
+</section>
+
+<!-- CHOOSING PLATFORM -->
+<section id="choosing-platform">
+  <h2><span class="tag">07 //</span> Choosing a Platform Layer</h2>
+  <p>Everything above works directly against Meta's raw API. In practice, most teams put a managed platform (like Wati) in front of this for inbox management, agent handoff, and broadcast — while still using the catalog and Sheets code patterns above for the commerce logic.</p>
+
+  <table>
+    <thead><tr><th>Need</th><th>Raw API (this doc)</th><th>Managed Platform</th></tr></thead>
+    <tbody>
+      <tr><td>Catalog sync from Sheets</td><td>✅ Full control</td><td>⚠️ Varies by provider</td></tr>
+      <tr><td>Shared team inbox</td><td>❌ Build yourself</td><td>✅ Built-in</td></tr>
+      <tr><td>Broadcast + templates UI</td><td>❌ Manual via API</td><td>✅ Visual builder</td></tr>
+      <tr><td>Per-message cost transparency</td><td>✅ Direct Meta billing</td><td>⚠️ Some add markup</td></tr>
+    </tbody>
+  </table>
+
+  <p>For teams evaluating whether a managed layer is worth the added monthly cost versus running raw API integrations like the ones in this doc, the cost-benefit breakdown in <a href="https://zidnitech.com/is-wati-worth-it-in-saudi-arabia/">هل منصة Wati تستحق الاشتراك للشركات السعودية؟</a> covers the trade-off directly — including at what message volume the raw-API route starts making more sense than a subscription platform.</p>
+
+  <p>And since the pricing structure of any platform layer directly affects whether building this yourself saves money, the full plan comparison in <a href="https://zidnitech.com/whatsapp-api-pricing-plans-saudi-arabia/">مقارنة باقات وأسعار واجهة برمجة تطبيقات واتساب في السعودية 2026</a> is worth reading before committing to either path.</p>
+</section>
+
+<!-- RESOURCES -->
+<section id="resources">
+  <h2><span class="tag">08 //</span> Related Documentation (Arabic)</h2>
+  <p>This integration is documented for the <strong>Saudi Arabian market</strong> specifically — catalog pricing examples use SAR, and the Sheets sync pattern reflects how local merchants commonly manage inventory before adopting a full ERP.</p>
+
+  <div class="card-grid">
+    <a href="https://zidnitech.com/whatsapp-catalogue-business-guide/" target="_blank" rel="noopener" class="card">
+      <div class="card-tag">Catalog Strategy</div>
+      <div class="card-title">دليل كتالوج واتساب للأعمال: كيف تعرض منتجاتك وتبيع داخل المحادثة</div>
+      <div class="card-desc">The business-layer guide to catalog strategy — product photography standards, pricing display, and conversion patterns that complement the technical setup above.</div>
+      <div class="card-arrow">Read Arabic guide →</div>
+    </a>
+
+    <a href="https://zidnitech.com/whatsapp-google-sheets-integration-automation/" target="_blank" rel="noopener" class="card">
+      <div class="card-tag">Sheets Automation</div>
+      <div class="card-title">ربط واتساب مع Google Sheets: كيف تبني نظام بيانات تلقائي بدون مطوّر</div>
+      <div class="card-desc">No-code path to the same Sheets sync pattern documented above — for teams who want the workflow without writing the Node.js worker themselves.</div>
+      <div class="card-arrow">Read Arabic guide →</div>
+    </a>
+
+    <a href="https://zidnitech.com/is-wati-worth-it-in-saudi-arabia/" target="_blank" rel="noopener" class="card">
+      <div class="card-tag">Platform Evaluation</div>
+      <div class="card-title">هل منصة Wati تستحق الاشتراك للشركات السعودية؟</div>
+      <div class="card-desc">Honest cost-benefit analysis of managed platforms vs. raw API integration — useful before deciding which parts of this doc to build yourself.</div>
+      <div class="card-arrow">Read Arabic guide →</div>
+    </a>
+
+    <a href="https://zidnitech.com/whatsapp-api-pricing-plans-saudi-arabia/" target="_blank" rel="noopener" class="card">
+      <div class="card-tag">Pricing Reference</div>
+      <div class="card-title">مقارنة باقات وأسعار واجهة برمجة تطبيقات واتساب في السعودية 2026</div>
+      <div class="card-desc">Full plan and per-message cost comparison across providers — relevant when estimating monthly cost of catalog messages and order confirmations at scale.</div>
+      <div class="card-arrow">Read Arabic guide →</div>
+    </a>
+  </div>
+</section>
+
+</div>
+
+<footer>
+  <p>MIT License · <a href="https://zidnitech.com" target="_blank" rel="noopener">zidnitech.com</a> · Reference implementation for the Saudi Arabian market</p>
+  <p style="margin-top:8px; font-size:11px; color:var(--text3);">Meta Graph API v19 · Node.js 20+ · Google Sheets API v4 · node-cron</p>
+</footer>
+
+<script>
+function cp(btn) {
+  const pre = btn.closest('.cb').querySelector('pre');
+  navigator.clipboard.writeText(pre.innerText).then(() => {
+    btn.textContent = 'copied!';
+    btn.style.color = '#2dd4bf';
+    setTimeout(() => { btn.textContent = 'copy'; btn.style.color = ''; }, 2000);
+  });
+}
+</script>
+</body>
+</html>
